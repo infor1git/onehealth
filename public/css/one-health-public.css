@@ -182,56 +182,40 @@ body.bw-booking-fullscreen .bw-wizard-wrapper {
  * ========================================================== */
 .bw-modal-overlay {
     position: fixed !important;
-    top: 0 !important; 
-    left: 0 !important; 
-    width: 100vw !important; 
-    height: 100vh !important;
-    background: rgba(0, 0, 0, 0.6) !important;
-    backdrop-filter: blur(8px) !important; 
-    -webkit-backdrop-filter: blur(8px) !important;
-    z-index: 2147483648 !important; /* Prioridade máxima sobre o fullscreen */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    box-sizing: border-box;
+    top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important;
+    background: rgba(15, 23, 42, 0.4) !important; 
+    backdrop-filter: blur(12px) !important; -webkit-backdrop-filter: blur(12px) !important;
+    z-index: 2147483648 !important; display: flex; align-items: center; justify-content: center;
+    padding: 20px; box-sizing: border-box;
 }
 
-/* Reutiliza as propriedades Glass do container principal para o modal */
 .bw-modal-content {
-    max-width: 650px !important;
-    width: 100% !important;
-    margin: 0 !important;
-    box-shadow: 0 40px 80px rgba(0,0,0,0.5) !important;
+    max-width: 600px !important; width: 100% !important; margin: 0 !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    border: 1px solid rgba(255,255,255,0.8) !important;
+    border-radius: 24px !important; padding: 2.5rem !important;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.15), 0 0 0 1px rgba(255,255,255,0.5) inset !important;
     animation: bwScaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@keyframes bwScaleUp {
-    from { opacity: 0; transform: scale(0.95) translateY(20px); }
-    to { opacity: 1; transform: scale(1) translateY(0); }
+.bw-theme-dark .bw-modal-content {
+    background: rgba(30, 41, 59, 0.95) !important; border-color: rgba(255,255,255,0.1) !important;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05) inset !important;
 }
 
-/* Formatação do texto do preparo que vem do banco de dados (WP Editor) */
-#bw-modal-preparo-text {
-    color: var(--bw-color-text-primary);
+#bw-modal-preparo-text { 
+    color: #334155; font-size: 1.05rem; line-height: 1.6; max-height: 50vh; overflow-y: auto; padding-right: 15px; 
 }
-#bw-modal-preparo-text h1, 
-#bw-modal-preparo-text h2, 
-#bw-modal-preparo-text h3 {
-    color: var(--bw-color-text-primary);
-    margin-top: 15px;
-    margin-bottom: 10px;
-}
-#bw-modal-preparo-text ul,
-#bw-modal-preparo-text ol {
-    padding-left: 20px;
-    margin-bottom: 15px;
-}
-#bw-modal-preparo-text li {
-    margin-bottom: 8px;
+.bw-theme-dark #bw-modal-preparo-text { color: #cbd5e1; }
+
+.bw-modal-title {
+    margin-top: 0; padding-bottom: 15px; margin-bottom: 20px;
+    border-bottom: 2px solid var(--bw-color-accent);
+    color: var(--bw-color-accent) !important;
+    font-weight: 600; font-size: 1.6rem; display: flex; align-items: center; gap: 10px;
 }
 
-/* Scrollbar Bonita no texto do modal */
 #bw-modal-preparo-text::-webkit-scrollbar { width: 6px; }
 #bw-modal-preparo-text::-webkit-scrollbar-track { background: transparent; }
-#bw-modal-preparo-text::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+#bw-modal-preparo-text::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 4px; }
+.bw-theme-dark #bw-modal-preparo-text::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); }

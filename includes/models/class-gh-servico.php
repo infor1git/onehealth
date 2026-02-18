@@ -32,12 +32,13 @@ class GH_Servico {
         $fields = array(
             'nome'         => sanitize_text_field( $data['nome'] ),
             'tipo'         => sanitize_text_field( $data['tipo'] ),
-            'valor'        => floatval( str_replace(',', '.', $data['valor'] ) ), // Trata R$
-            'preparo_html' => wp_kses_post( $data['preparo_html'] ), // Permite HTML seguro
+            'valor'        => floatval( str_replace(',', '.', $data['valor'] ) ),
+            'preparo_html' => wp_kses_post( $data['preparo_html'] ),
+            'icone'        => !empty($data['icone']) ? sanitize_text_field( $data['icone'] ) : 'dashicons-clipboard',
             'is_active'    => isset( $data['is_active'] ) ? 1 : 0
         );
 
-        $format = array( '%s', '%s', '%f', '%s', '%d' );
+        $format = array( '%s', '%s', '%f', '%s', '%s', '%d' );
         $servico_id = 0;
 
         if ( ! empty( $data['id'] ) ) {
@@ -49,7 +50,6 @@ class GH_Servico {
             $servico_id = $wpdb->insert_id;
         }
 
-        // Atualiza Especialidades
         $wpdb->delete( $this->table_rel, array( 'servico_id' => $servico_id ), array( '%d' ) );
         
         if ( ! empty( $data['especialidades'] ) && is_array( $data['especialidades'] ) ) {
@@ -67,7 +67,6 @@ class GH_Servico {
 
     public function delete( $id ) {
         global $wpdb;
-        // Validação futura: verificar agendamentos
         return $wpdb->delete( $this->table_name, array( 'id' => $id ), array( '%d' ) );
     }
 }

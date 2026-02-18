@@ -20,41 +20,25 @@ if ( isset( $_GET['message'] ) ) {
 
         <table class="wp-list-table widefat fixed striped">
             <thead>
-                <tr>
-                    <th>Nome</th>
-                    <th>Tipo</th>
-                    <th>Valor Ref.</th>
-                    <th>Especialidades</th>
-                    <th>Status</th>
-                    <th>Ações</th>
-                </tr>
+                <tr><th style="width:50px;">Ícone</th><th>Nome</th><th>Tipo</th><th>Valor Ref.</th><th>Especialidades</th><th>Status</th><th>Ações</th></tr>
             </thead>
             <tbody>
-                <?php 
-                $items = $model->get_all();
-                if ( $items ) :
-                    foreach ( $items as $item ) : 
-                        $esps = $model->get_especialidades_ids( $item->id );
-                        ?>
-                        <tr>
-                            <td><strong><?php echo esc_html( $item->nome ); ?></strong></td>
-                            <td>
-                                <?php 
-                                    $labels = ['consulta'=>'Consulta', 'exame'=>'Exame', 'procedimento'=>'Procedimento'];
-                                    echo isset($labels[$item->tipo]) ? $labels[$item->tipo] : $item->tipo;
-                                ?>
-                            </td>
-                            <td>R$ <?php echo number_format($item->valor, 2, ',', '.'); ?></td>
-                            <td><?php echo count($esps); ?> vinculada(s)</td>
-                            <td><?php echo $item->is_active ? 'Ativo' : 'Inativo'; ?></td>
-                            <td>
-                                <a href="<?php echo $base_url . '&action=edit&id=' . $item->id; ?>" class="button button-small">Editar</a>
-                                <a href="<?php echo wp_nonce_url( admin_url( 'admin-post.php?action=gh_delete_servico&id=' . $item->id ), 'delete_servico_' . $item->id ); ?>" class="button button-small button-link-delete" onclick="return confirm('Tem certeza?');">Excluir</a>
-                            </td>
-                        </tr>
-                    <?php endforeach; 
-                else : ?>
-                    <tr><td colspan="6">Nenhum serviço cadastrado.</td></tr>
+                <?php $items = $model->get_all();
+                if ( $items ) : foreach ( $items as $item ) : $esps = $model->get_especialidades_ids( $item->id ); ?>
+                    <tr>
+                        <td style="text-align:center;"><span class="dashicons <?php echo !empty($item->icone) ? esc_attr($item->icone) : 'dashicons-clipboard'; ?>"></span></td>
+                        <td><strong><?php echo esc_html( $item->nome ); ?></strong></td>
+                        <td><?php echo ucfirst($item->tipo); ?></td>
+                        <td>R$ <?php echo number_format($item->valor, 2, ',', '.'); ?></td>
+                        <td><?php echo count($esps); ?> vinculada(s)</td>
+                        <td><?php echo $item->is_active ? 'Ativo' : 'Inativo'; ?></td>
+                        <td>
+                            <a href="<?php echo $base_url . '&action=edit&id=' . $item->id; ?>" class="button button-small">Editar</a>
+                            <a href="<?php echo wp_nonce_url( admin_url( 'admin-post.php?action=gh_delete_servico&id=' . $item->id ), 'delete_servico_' . $item->id ); ?>" class="button button-small button-link-delete" onclick="return confirm('Tem certeza?');">Excluir</a>
+                        </td>
+                    </tr>
+                <?php endforeach; else : ?>
+                    <tr><td colspan="7">Nenhum serviço cadastrado.</td></tr>
                 <?php endif; ?>
             </tbody>
         </table>
@@ -76,44 +60,22 @@ if ( isset( $_GET['message'] ) ) {
 
             <div id="poststuff">
                 <div id="post-body" class="metabox-holder columns-2">
-                    
                     <div id="postbox-container-1" class="postbox-container">
-                        
                         <div class="postbox">
                             <h2 class="hndle"><span>Publicar</span></h2>
                             <div class="inside">
-                                <div class="misc-pub-section">
-                                    <label>Status:</label>
-                                    <select name="is_active">
-                                        <option value="1" <?php selected( $dados ? $dados->is_active : 1, 1 ); ?>>Ativo</option>
-                                        <option value="0" <?php selected( $dados ? $dados->is_active : 1, 0 ); ?>>Inativo</option>
-                                    </select>
-                                </div>
-                                <div id="major-publishing-actions">
-                                    <div id="publishing-action">
-                                        <input type="submit" class="button button-primary button-large" value="Salvar">
-                                    </div>
-                                    <div class="clear"></div>
-                                </div>
+                                <label>Status:</label>
+                                <select name="is_active"><option value="1" <?php selected( $dados ? $dados->is_active : 1, 1 ); ?>>Ativo</option><option value="0" <?php selected( $dados ? $dados->is_active : 1, 0 ); ?>>Inativo</option></select>
+                                <div id="major-publishing-actions"><div id="publishing-action"><input type="submit" class="button button-primary button-large" value="Salvar"></div><div class="clear"></div></div>
                             </div>
                         </div>
-
                         <div class="postbox">
                             <h2 class="hndle"><span>Vincular a Especialidades</span></h2>
                             <div class="inside">
                                 <p class="description">Quais especialidades realizam este serviço?</p>
-                                
-                                <div style="margin-bottom: 5px;">
-                                    <a href="#" id="gh_select_all_esp" style="font-size: 12px;">Marcar todos</a> | 
-                                    <a href="#" id="gh_deselect_all_esp" style="font-size: 12px; color: #a00;">Desmarcar todos</a>
-                                </div>
-
                                 <div style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; background: #fff;">
                                     <?php if($todas_esps): foreach($todas_esps as $esp): ?>
-                                        <label style="display:block; margin-bottom: 5px;">
-                                            <input type="checkbox" name="especialidades[]" class="gh-esp-checkbox" value="<?php echo $esp->id; ?>" <?php echo in_array($esp->id, $selected_esps) ? 'checked' : ''; ?>>
-                                            <?php echo esc_html($esp->nome); ?>
-                                        </label>
+                                        <label style="display:block; margin-bottom: 5px;"><input type="checkbox" name="especialidades[]" class="gh-esp-checkbox" value="<?php echo $esp->id; ?>" <?php echo in_array($esp->id, $selected_esps) ? 'checked' : ''; ?>> <?php echo esc_html($esp->nome); ?></label>
                                     <?php endforeach; else: echo "Cadastre especialidades primeiro."; endif; ?>
                                 </div>
                             </div>
@@ -140,25 +102,30 @@ if ( isset( $_GET['message'] ) ) {
                                             </td>
                                         </tr>
                                         <tr>
+                                            <th scope="row"><label>Ícone</label></th>
+                                            <td>
+                                                <div style="display:flex; align-items:center; gap:10px;">
+                                                    <input type="hidden" name="icone" id="gh_icone_input" value="<?php echo $dados && !empty($dados->icone) ? esc_attr($dados->icone) : 'dashicons-clipboard'; ?>">
+                                                    <div id="gh_icone_preview" style="width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid #ccc;border-radius:6px;">
+                                                        <span class="dashicons <?php echo $dados && !empty($dados->icone) ? esc_attr($dados->icone) : 'dashicons-clipboard'; ?>" style="font-size:24px;width:24px;height:24px;"></span>
+                                                    </div>
+                                                    <button type="button" class="button" id="gh_open_icon_picker">Escolher Ícone</button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
                                             <th scope="row"><label>Valor de Referência (R$)</label></th>
                                             <td><input name="valor" type="text" value="<?php echo $dados ? esc_attr($dados->valor) : '0.00'; ?>" class="regular-text" style="width: 150px;"></td>
                                         </tr>
                                         <tr>
                                             <th scope="row"><label>Instruções de Preparo</label></th>
-                                            <td>
-                                                <?php 
-                                                $content = $dados ? $dados->preparo_html : '';
-                                                wp_editor( $content, 'preparo_html', array( 'textarea_name' => 'preparo_html', 'media_buttons' => false, 'textarea_rows' => 8, 'teeny' => true ) ); 
-                                                ?>
-                                                <p class="description">Texto exibido ao paciente ao agendar exames.</p>
-                                            </td>
+                                            <td><?php $content = $dados ? $dados->preparo_html : ''; wp_editor( $content, 'preparo_html', array( 'textarea_name' => 'preparo_html', 'media_buttons' => false, 'textarea_rows' => 8, 'teeny' => true ) ); ?></td>
                                         </tr>
                                     </tbody>
                                 </table>
                             </div>
                         </div>
                     </div>
-
                 </div>
             </div>
         </form>

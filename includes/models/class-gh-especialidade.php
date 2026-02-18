@@ -25,10 +25,11 @@ class GH_Especialidade {
         $fields = array(
             'nome'      => sanitize_text_field( $data['nome'] ),
             'cbo'       => sanitize_text_field( $data['cbo'] ),
+            'icone'     => !empty($data['icone']) ? sanitize_text_field( $data['icone'] ) : 'dashicons-heart',
             'is_active' => isset( $data['is_active'] ) ? 1 : 0
         );
 
-        $format = array( '%s', '%s', '%d' );
+        $format = array( '%s', '%s', '%s', '%d' );
 
         if ( ! empty( $data['id'] ) ) {
             return $wpdb->update( $this->table_name, $fields, array( 'id' => intval( $data['id'] ) ), $format, array( '%d' ) );
@@ -40,12 +41,10 @@ class GH_Especialidade {
 
     public function delete( $id ) {
         global $wpdb;
-        
-        // Validação: Verificar se existem médicos vinculados
         $medicos_count = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$wpdb->prefix}gh_medico_especialidade WHERE especialidade_id = %d", $id ) );
         
         if ( $medicos_count > 0 ) {
-            return new WP_Error( 'dependency_error', 'Impossível excluir: Existem médicos com esta especialidade. Desative-a.' );
+            return new WP_Error( 'dependency_error', 'Impossível excluir: Existem médicos com esta especialidade.' );
         }
 
         return $wpdb->delete( $this->table_name, array( 'id' => $id ), array( '%d' ) );

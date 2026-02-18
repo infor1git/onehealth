@@ -5,12 +5,14 @@ class GH_Medico {
     private $table_name;
     private $table_unidade;
     private $table_especialidade;
+    private $table_servico; // [NOVO]
 
     public function __construct() {
         global $wpdb;
         $this->table_name = $wpdb->prefix . 'gh_medicos';
         $this->table_unidade = $wpdb->prefix . 'gh_medico_unidade';
         $this->table_especialidade = $wpdb->prefix . 'gh_medico_especialidade';
+        $this->table_servico = $wpdb->prefix . 'gh_medico_servico';
     }
 
     public function get_all() {
@@ -23,20 +25,20 @@ class GH_Medico {
         return $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$this->table_name} WHERE id = %d", $id ) );
     }
 
-    /**
-     * Retorna IDs das Unidades vinculadas ao médico
-     */
     public function get_unidades_ids( $medico_id ) {
         global $wpdb;
         return $wpdb->get_col( $wpdb->prepare( "SELECT unidade_id FROM {$this->table_unidade} WHERE medico_id = %d", $medico_id ) );
     }
 
-    /**
-     * Retorna IDs das Especialidades vinculadas ao médico
-     */
     public function get_especialidades_ids( $medico_id ) {
         global $wpdb;
         return $wpdb->get_col( $wpdb->prepare( "SELECT especialidade_id FROM {$this->table_especialidade} WHERE medico_id = %d", $medico_id ) );
+    }
+
+    // [NOVO] Retorna IDs de serviços explicitamente vinculados
+    public function get_servicos_ids( $medico_id ) {
+        global $wpdb;
+        return $wpdb->get_col( $wpdb->prepare( "SELECT servico_id FROM {$this->table_servico} WHERE medico_id = %d", $medico_id ) );
     }
 
     public function save( $data ) {
@@ -55,7 +57,6 @@ class GH_Medico {
         $format = array( '%s', '%s', '%s', '%s', '%s', '%s', '%d' );
         $medico_id = 0;
 
-        // 1. Salva ou Atualiza o Médico
         if ( ! empty( $data['id'] ) ) {
             $medico_id = intval( $data['id'] );
             $wpdb->update( $this->table_name, $fields, array( 'id' => $medico_id ), $format, array( '%d' ) );
@@ -67,31 +68,33 @@ class GH_Medico {
 
         if ( ! $medico_id ) return false;
 
-        // 2. Atualiza Relacionamento com Unidades
-        // Primeiro limpa tudo
+        // 1. Unidades
         $wpdb->delete( $this->table_unidade, array( 'medico_id' => $medico_id ), array( '%d' ) );
-        
-        // Insere os novos selecionados
         if ( ! empty( $data['unidades'] ) && is_array( $data['unidades'] ) ) {
-            foreach ( $data['unidades'] as $unidade_id ) {
-                $wpdb->insert( 
-                    $this->table_unidade, 
-                    array( 'medico_id' => $medico_id, 'unidade_id' => intval( $unidade_id ) ),
-                    array( '%d', '%d' )
-                );
+            foreach ( $data['unidades'] as $uid ) {
+                $wpdb->insert( $this->table_unidade, array( 'medico_id' => $medico_id, 'unidade_id' => intval($uid) ), array( '%d', '%d' ) );
             }
         }
 
-        // 3. Atualiza Relacionamento com Especialidades
+        // 2. Especialidades
         $wpdb->delete( $this->table_especialidade, array( 'medico_id' => $medico_id ), array( '%d' ) );
-        
         if ( ! empty( $data['especialidades'] ) && is_array( $data['especialidades'] ) ) {
-            foreach ( $data['especialidades'] as $esp_id ) {
-                $wpdb->insert( 
-                    $this->table_especialidade, 
-                    array( 'medico_id' => $medico_id, 'especialidade_id' => intval( $esp_id ) ),
-                    array( '%d', '%d' )
-                );
+            foreach ( $data['especialidades'] as $eid ) {
+                $wpdb->insert( $this->table_especialidade, array( 'medico_id' => $medico_id, 'especialidade_id' => intval($eid) ), array( '%d', '%d' ) );
+            }
+        }
+
+        // 3. Serviços (Nova Lógica)
+        // Regra: "Se nenhum serviço selecionado, atende todos. Se algum selecionado, atende só aqueles."
+        // Implementação no Banco: Salvamos apenas o que foi marcado.
+        // Se a lista vier vazia, apagamos tudo (o que na lógica de leitura significará "todos", se validarmos assim).
+        // Mas para garantir a lógica "Marcar Todos por Padrão", o admin deve enviar os IDs.
+        
+        $wpdb->delete( $this->table_servico, array( 'medico_id' => $medico_id ), array( '%d' ) );
+        
+        if ( ! empty( $data['servicos_permitidos'] ) && is_array( $data['servicos_permitidos'] ) ) {
+            foreach ( $data['servicos_permitidos'] as $sid ) {
+                $wpdb->insert( $this->table_servico, array( 'medico_id' => $medico_id, 'servico_id' => intval($sid) ), array( '%d', '%d' ) );
             }
         }
 
@@ -100,8 +103,6 @@ class GH_Medico {
 
     public function delete( $id ) {
         global $wpdb;
-        // Validação básica: se tiver agendamentos futuros, não deixa excluir.
-        // Implementaremos a validação de agendamentos depois.
         return $wpdb->delete( $this->table_name, array( 'id' => $id ), array( '%d' ) );
     }
 }
