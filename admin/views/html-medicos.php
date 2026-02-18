@@ -1,14 +1,19 @@
 <?php
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-// [CORREÇÃO CRÍTICA] Habilita o acesso ao banco de dados neste arquivo
+// Habilita o acesso ao banco de dados neste arquivo
 global $wpdb; 
 
 $medico_model = new GH_Medico();
 $unidade_model = new GH_Unidade();
 $esp_model = new GH_Especialidade();
 $servico_model = new GH_Servico(); 
-$agenda_model = isset($agenda_model) ? $agenda_model : (class_exists('GH_Agenda') ? new GH_Agenda() : null);
+
+// [CORREÇÃO] Instanciação direta da classe de agenda para garantir que a aba funcione
+if ( ! class_exists( 'GH_Agenda' ) ) {
+    require_once plugin_dir_path( dirname( __FILE__ ) ) . '../includes/models/class-gh-agenda.php';
+}
+$agenda_model = new GH_Agenda();
 
 $action = isset( $_GET['action'] ) ? $_GET['action'] : 'list';
 $base_url = admin_url( 'admin.php?page=one-health-medicos' );
@@ -59,8 +64,7 @@ if ( isset( $_GET['message'] ) ) {
         $dados = $id ? $medico_model->get( $id ) : null;
         $selected_unis = $id ? $medico_model->get_unidades_ids($id) : array();
         $selected_esps = $id ? $medico_model->get_especialidades_ids($id) : array();
-        // Garante que o método existe antes de chamar, evitando erro se o model não foi atualizado
-        $selected_servs = ($id && method_exists($medico_model, 'get_servicos_ids')) ? $medico_model->get_servicos_ids($id) : array();
+        $selected_servs = ($id && method_exists($medico_model, 'get_servicos_por_especialidade')) ? $medico_model->get_servicos_por_especialidade($id) : array();
     ?>
         <h1 class="wp-heading-inline"><?php echo $id ? 'Editar Médico' : 'Novo Médico'; ?></h1>
         <a href="<?php echo $base_url; ?>" class="page-title-action">Voltar</a>
@@ -79,6 +83,12 @@ if ( isset( $_GET['message'] ) ) {
                 <input type="hidden" name="action" value="gh_save_medico">
                 <?php if ($id) : ?><input type="hidden" name="id" value="<?php echo $id; ?>"><?php endif; ?>
                 <?php wp_nonce_field( 'gh_save_medico_nonce', 'gh_security' ); ?>
+                
+                <?php if($id && !empty($selected_servs)): 
+                        foreach($selected_servs as $eid => $sids): 
+                            foreach($sids as $sid): ?>
+                                <input type="hidden" name="servicos_permitidos[<?php echo $eid; ?>][]" value="<?php echo $sid; ?>">
+                <?php endforeach; endforeach; endif; ?>
 
                 <div id="poststuff">
                     <div id="post-body" class="metabox-holder columns-2">
@@ -101,7 +111,6 @@ if ( isset( $_GET['message'] ) ) {
                             <div class="postbox">
                                 <h2 class="hndle"><span>Especialidades</span></h2>
                                 <div class="inside" style="max-height:200px;overflow:auto;">
-                                    <p class="description">Selecione as especialidades do médico.</p>
                                     <?php if($todas_esps): foreach($todas_esps as $esp): ?>
                                         <label style="display:block; margin-bottom:4px;">
                                             <input type="checkbox" name="especialidades[]" value="<?php echo $esp->id; ?>" <?php echo in_array($esp->id, $selected_esps) ? 'checked' : ''; ?>> 
@@ -141,7 +150,10 @@ if ( isset( $_GET['message'] ) ) {
                 <input type="hidden" name="nome" value="<?php echo esc_attr($dados->nome); ?>">
                 <input type="hidden" name="crm" value="<?php echo esc_attr($dados->crm); ?>">
                 <input type="hidden" name="email" value="<?php echo esc_attr($dados->email); ?>">
+                <input type="hidden" name="telefone" value="<?php echo esc_attr($dados->telefone); ?>">
+                <input type="hidden" name="cpf" value="<?php echo esc_attr($dados->cpf); ?>">
                 <input type="hidden" name="foto_url" value="<?php echo esc_attr($dados->foto_url); ?>">
+                <input type="hidden" name="is_active" value="<?php echo esc_attr($dados->is_active); ?>">
                 <?php foreach($selected_esps as $eid) echo '<input type="hidden" name="especialidades[]" value="'.$eid.'">'; ?>
                 <?php foreach($selected_unis as $uid) echo '<input type="hidden" name="unidades[]" value="'.$uid.'">'; ?>
 
@@ -157,9 +169,8 @@ if ( isset( $_GET['message'] ) ) {
                         else:
                             foreach($selected_esps as $esp_id): 
                                 $esp_obj = $esp_model->get($esp_id);
-                                if(!$esp_obj) continue; // Pula se especialidade não existir mais (segurança)
+                                if(!$esp_obj) continue;
 
-                                // Pega todos os serviços vinculados a essa especialidade
                                 $servicos_da_esp = $wpdb->get_results( $wpdb->prepare(
                                     "SELECT s.id, s.nome FROM {$wpdb->prefix}gh_servicos s 
                                      INNER JOIN {$wpdb->prefix}gh_servico_especialidade se ON s.id = se.servico_id 
@@ -181,12 +192,10 @@ if ( isset( $_GET['message'] ) ) {
                                 <?php else: ?>
                                     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px;">
                                         <?php foreach($servicos_da_esp as $srv): 
-                                            // Se a lista salva estiver vazia, marcamos tudo (comportamento padrão)
-                                            // Se não estiver vazia, checamos se o ID está lá
-                                            $is_checked = ( empty($selected_servs) || in_array($srv->id, $selected_servs) ) ? 'checked' : '';
+                                            $is_checked = ( empty($selected_servs[$esp_id]) || in_array($srv->id, $selected_servs[$esp_id]) ) ? 'checked' : '';
                                         ?>
                                             <label style="display:flex; align-items:center; background:#f9f9f9; padding:8px; border-radius:4px; border:1px solid #eee;">
-                                                <input type="checkbox" name="servicos_permitidos[]" value="<?php echo $srv->id; ?>" class="gh-check-esp-<?php echo $esp_id; ?>" <?php echo $is_checked; ?> style="margin-top:0; margin-right:8px;"> 
+                                                <input type="checkbox" name="servicos_permitidos[<?php echo $esp_id; ?>][]" value="<?php echo $srv->id; ?>" class="gh-check-esp-<?php echo $esp_id; ?>" <?php echo $is_checked; ?> style="margin-top:0; margin-right:8px;"> 
                                                 <?php echo esc_html($srv->nome); ?>
                                             </label>
                                         <?php endforeach; ?>
@@ -200,8 +209,8 @@ if ( isset( $_GET['message'] ) ) {
                     </div>
                 </div>
             </form>
-
-        <?php elseif( $active_tab == 'turnos' && $id && $agenda_model ): ?>
+            
+        <?php elseif( $active_tab == 'turnos' && $id ): ?>
             <div id="poststuff">
                 <div class="postbox">
                     <h2 class="hndle"><span>Adicionar Turno de Trabalho</span></h2>

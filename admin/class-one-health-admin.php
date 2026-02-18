@@ -141,12 +141,16 @@ class One_Health_Admin {
 		
 		if ( isset( $_POST['gh_theme'] ) ) update_option( 'gh_theme', sanitize_text_field( $_POST['gh_theme'] ) );
 		if ( isset( $_POST['gh_wizard_logo'] ) ) update_option( 'gh_wizard_logo', esc_url_raw( $_POST['gh_wizard_logo'] ) );
+        if ( isset( $_POST['gh_turnstile_sitekey'] ) ) update_option( 'gh_turnstile_sitekey', sanitize_text_field( $_POST['gh_turnstile_sitekey'] ) );
+        if ( isset( $_POST['gh_turnstile_secret'] ) ) update_option( 'gh_turnstile_secret', sanitize_text_field( $_POST['gh_turnstile_secret'] ) );
+        if ( isset( $_POST['gh_turnstile_theme'] ) ) update_option( 'gh_turnstile_theme', sanitize_text_field( $_POST['gh_turnstile_theme'] ) );
+        
+        if ( isset( $_POST['gh_page_perfil'] ) ) update_option( 'gh_page_perfil', intval( $_POST['gh_page_perfil'] ) );
+        if ( isset( $_POST['gh_page_agendamentos'] ) ) update_option( 'gh_page_agendamentos', intval( $_POST['gh_page_agendamentos'] ) );
 		
-        // Lógica da Cor Personalizada
         if ( isset($_POST['gh_use_default_color']) ) {
-            update_option('gh_accent_color', ''); // Reseta para cor do tema
+            update_option('gh_accent_color', ''); 
         } elseif ( isset($_POST['gh_accent_color']) ) {
-            // Salva a cor garantindo que é um hexadecimal válido
             update_option('gh_accent_color', sanitize_hex_color($_POST['gh_accent_color']));
         }
 

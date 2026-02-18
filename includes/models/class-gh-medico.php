@@ -5,7 +5,7 @@ class GH_Medico {
     private $table_name;
     private $table_unidade;
     private $table_especialidade;
-    private $table_servico; // [NOVO]
+    private $table_servico;
 
     public function __construct() {
         global $wpdb;
@@ -15,30 +15,26 @@ class GH_Medico {
         $this->table_servico = $wpdb->prefix . 'gh_medico_servico';
     }
 
-    public function get_all() {
-        global $wpdb;
-        return $wpdb->get_results( "SELECT * FROM {$this->table_name} WHERE is_active = 1 ORDER BY nome ASC" );
-    }
+    public function get_all() { global $wpdb; return $wpdb->get_results( "SELECT * FROM {$this->table_name} WHERE is_active = 1 ORDER BY nome ASC" ); }
+    public function get( $id ) { global $wpdb; return $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$this->table_name} WHERE id = %d", $id ) ); }
+    public function get_unidades_ids( $medico_id ) { global $wpdb; return $wpdb->get_col( $wpdb->prepare( "SELECT unidade_id FROM {$this->table_unidade} WHERE medico_id = %d", $medico_id ) ); }
+    public function get_especialidades_ids( $medico_id ) { global $wpdb; return $wpdb->get_col( $wpdb->prepare( "SELECT especialidade_id FROM {$this->table_especialidade} WHERE medico_id = %d", $medico_id ) ); }
 
-    public function get( $id ) {
+    // [MÉTODO CORRIGIDO] Retorna os serviços organizados pela especialidade do médico
+    public function get_servicos_por_especialidade( $medico_id ) {
         global $wpdb;
-        return $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$this->table_name} WHERE id = %d", $id ) );
-    }
-
-    public function get_unidades_ids( $medico_id ) {
-        global $wpdb;
-        return $wpdb->get_col( $wpdb->prepare( "SELECT unidade_id FROM {$this->table_unidade} WHERE medico_id = %d", $medico_id ) );
-    }
-
-    public function get_especialidades_ids( $medico_id ) {
-        global $wpdb;
-        return $wpdb->get_col( $wpdb->prepare( "SELECT especialidade_id FROM {$this->table_especialidade} WHERE medico_id = %d", $medico_id ) );
-    }
-
-    // [NOVO] Retorna IDs de serviços explicitamente vinculados
-    public function get_servicos_ids( $medico_id ) {
-        global $wpdb;
-        return $wpdb->get_col( $wpdb->prepare( "SELECT servico_id FROM {$this->table_servico} WHERE medico_id = %d", $medico_id ) );
+        $results = $wpdb->get_results( $wpdb->prepare( "SELECT especialidade_id, servico_id FROM {$this->table_servico} WHERE medico_id = %d", $medico_id ) );
+        
+        $formatado = array();
+        if($results) {
+            foreach($results as $row) {
+                if(!isset($formatado[$row->especialidade_id])) {
+                    $formatado[$row->especialidade_id] = array();
+                }
+                $formatado[$row->especialidade_id][] = $row->servico_id;
+            }
+        }
+        return $formatado; // Retorna: array( esp_id => array(srv_id, srv_id) )
     }
 
     public function save( $data ) {
@@ -68,7 +64,6 @@ class GH_Medico {
 
         if ( ! $medico_id ) return false;
 
-        // 1. Unidades
         $wpdb->delete( $this->table_unidade, array( 'medico_id' => $medico_id ), array( '%d' ) );
         if ( ! empty( $data['unidades'] ) && is_array( $data['unidades'] ) ) {
             foreach ( $data['unidades'] as $uid ) {
@@ -76,7 +71,6 @@ class GH_Medico {
             }
         }
 
-        // 2. Especialidades
         $wpdb->delete( $this->table_especialidade, array( 'medico_id' => $medico_id ), array( '%d' ) );
         if ( ! empty( $data['especialidades'] ) && is_array( $data['especialidades'] ) ) {
             foreach ( $data['especialidades'] as $eid ) {
@@ -84,17 +78,20 @@ class GH_Medico {
             }
         }
 
-        // 3. Serviços (Nova Lógica)
-        // Regra: "Se nenhum serviço selecionado, atende todos. Se algum selecionado, atende só aqueles."
-        // Implementação no Banco: Salvamos apenas o que foi marcado.
-        // Se a lista vier vazia, apagamos tudo (o que na lógica de leitura significará "todos", se validarmos assim).
-        // Mas para garantir a lógica "Marcar Todos por Padrão", o admin deve enviar os IDs.
-        
+        // [CORREÇÃO] Gravação respeitando a relação tridimensional
         $wpdb->delete( $this->table_servico, array( 'medico_id' => $medico_id ), array( '%d' ) );
         
         if ( ! empty( $data['servicos_permitidos'] ) && is_array( $data['servicos_permitidos'] ) ) {
-            foreach ( $data['servicos_permitidos'] as $sid ) {
-                $wpdb->insert( $this->table_servico, array( 'medico_id' => $medico_id, 'servico_id' => intval($sid) ), array( '%d', '%d' ) );
+            foreach ( $data['servicos_permitidos'] as $esp_id => $servicos_da_esp ) {
+                if (is_array($servicos_da_esp)) {
+                    foreach ( $servicos_da_esp as $servico_id ) {
+                        $wpdb->insert( 
+                            $this->table_servico, 
+                            array( 'medico_id' => $medico_id, 'especialidade_id' => intval($esp_id), 'servico_id' => intval($servico_id) ), 
+                            array( '%d', '%d', '%d' ) 
+                        );
+                    }
+                }
             }
         }
 

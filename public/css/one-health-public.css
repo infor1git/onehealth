@@ -219,3 +219,157 @@ body.bw-booking-fullscreen .bw-wizard-wrapper {
 #bw-modal-preparo-text::-webkit-scrollbar-track { background: transparent; }
 #bw-modal-preparo-text::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 4px; }
 .bw-theme-dark #bw-modal-preparo-text::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); }
+
+/* ==========================================================
+ * LISTA DE PLANOS (Modal Glass) E CAIXA DE BUSCA
+ * ========================================================== */
+
+/* Estilo do botão do Plano dentro do Modal */
+.bw-plano-option {
+    background: rgba(255,255,255,0.8);
+    border: 1px solid var(--bw-color-card-border);
+    padding: 12px 18px;
+    border-radius: 12px;
+    font-size: 1.05rem;
+    color: var(--bw-color-text-primary);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+}
+.bw-theme-dark .bw-plano-option { background: rgba(0,0,0,0.3); }
+
+.bw-plano-option:hover {
+    background: var(--bw-color-accent);
+    color: #fff;
+    border-color: var(--bw-color-accent);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+/* Scrollbar Bonita no Modal de Planos */
+#bw-modal-planos-list::-webkit-scrollbar { width: 6px; }
+#bw-modal-planos-list::-webkit-scrollbar-track { background: transparent; }
+#bw-modal-planos-list::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 4px; }
+.bw-theme-dark #bw-modal-planos-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); }
+
+/* Remove a borda azul feia padrão do WordPress ao clicar na caixa de busca */
+.bw-search-input-container .dashicons { pointer-events: none; }
+
+/* ==========================================================
+ * SISTEMA DE AUTENTICAÇÃO E REGISTRO
+ * ========================================================== */
+.bw-auth-tabs {
+    display: flex; gap: 10px; margin-bottom: 25px; border-bottom: 2px solid rgba(0,0,0,0.1);
+}
+.bw-auth-tab {
+    background: transparent; border: none; font-size: 1.1rem; padding: 10px 20px;
+    color: var(--bw-color-text-secondary); cursor: pointer; font-weight: 600;
+    transition: all 0.3s; position: relative;
+}
+.bw-auth-tab.active {
+    color: var(--bw-color-accent);
+}
+.bw-auth-tab.active::after {
+    content: ''; position: absolute; bottom: -2px; left: 0; width: 100%; height: 3px;
+    background: var(--bw-color-accent); border-radius: 3px 3px 0 0;
+}
+
+.bw-auth-form {
+    background: rgba(0,0,0,0.03); padding: 25px; border-radius: 16px;
+    border: 1px solid var(--bw-color-card-border);
+}
+
+/* ==========================================================
+ * SISTEMA DE AUTENTICAÇÃO E PERFIL DO USUÁRIO
+ * ========================================================== */
+.bw-auth-tabs { display: flex; gap: 10px; margin-bottom: 25px; border-bottom: 2px solid rgba(0,0,0,0.1); }
+.bw-auth-tab { background: transparent; border: none; font-size: 1.1rem; padding: 10px 20px; color: var(--bw-color-text-secondary); cursor: pointer; font-weight: 600; transition: all 0.3s; position: relative; }
+.bw-auth-tab.active { color: var(--bw-color-accent); }
+.bw-auth-tab.active::after { content: ''; position: absolute; bottom: -2px; left: 0; width: 100%; height: 3px; background: var(--bw-color-accent); border-radius: 3px 3px 0 0; }
+.bw-auth-form { background: rgba(0,0,0,0.03); padding: 25px; border-radius: 16px; border: 1px solid var(--bw-color-card-border); }
+
+/* Centraliza o Captcha Turnstile */
+.cf-turnstile-container { display: flex; justify-content: center; margin: 15px 0; }
+
+/* Bloco do Usuário Logado */
+.bw-user-profile-box {
+    background: rgba(0,0,0,0.03);
+    border: 1px solid var(--bw-color-card-border);
+    border-radius: 12px;
+    padding: 15px 20px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.bw-user-profile-box a { color: var(--bw-color-accent); text-decoration: none; font-weight: 500; font-size: 0.9rem; line-height: 1.8; }
+.bw-user-profile-box a:hover { text-decoration: underline; }
+
+/* Scrollbar Bonita no Modal de Planos */
+.bw-plano-option { background: rgba(255,255,255,0.8); border: 1px solid var(--bw-color-card-border); padding: 12px 18px; border-radius: 12px; font-size: 1.05rem; color: var(--bw-color-text-primary); cursor: pointer; transition: all 0.2s; font-weight: 500; }
+.bw-theme-dark .bw-plano-option { background: rgba(0,0,0,0.3); }
+.bw-plano-option:hover { background: var(--bw-color-accent); color: #fff; border-color: var(--bw-color-accent); transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+#bw-modal-planos-list::-webkit-scrollbar { width: 6px; }
+#bw-modal-planos-list::-webkit-scrollbar-track { background: transparent; }
+#bw-modal-planos-list::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 4px; }
+.bw-theme-dark #bw-modal-planos-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); }
+
+/* ==========================================================
+ * NOVO CABEÇALHO COM INFORMAÇÕES DO USUÁRIO
+ * ========================================================== */
+.bw-wizard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--bw-color-card-border);
+}
+
+.bw-user-header-menu {
+    text-align: right;
+}
+
+.bw-user-greeting {
+    font-weight: bold;
+    color: var(--bw-color-text-primary);
+    margin-bottom: 5px;
+    font-size: 1.05rem;
+}
+
+.bw-user-links {
+    font-size: 0.85rem;
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+.bw-user-links a {
+    color: var(--bw-color-accent);
+    text-decoration: none;
+    transition: opacity 0.2s;
+}
+
+.bw-user-links a.bw-logout {
+    color: var(--bw-color-text-secondary);
+}
+
+.bw-user-links a:hover {
+    opacity: 0.7;
+    text-decoration: underline;
+}
+
+/* Responsividade do Cabeçalho */
+@media screen and (max-width: 650px) {
+    .bw-wizard-header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+    .bw-user-header-menu {
+        text-align: center;
+    }
+    .bw-user-links {
+        justify-content: center;
+    }
+}
