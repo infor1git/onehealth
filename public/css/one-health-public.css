@@ -1,95 +1,405 @@
-#gh-booking-wizard {
-    max-width: 800px;
-    margin: 0 auto;
-    font-family: Arial, sans-serif;
-    border: 1px solid #eee;
-    padding: 20px;
-    border-radius: 8px;
-    background: #fff;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+/* UI/UX Refactoring - Múltiplos Temas & True Fullscreen */
+
+/* ==========================================================
+ * MÚLTIPLOS TEMAS DE CORES
+ * ========================================================== */
+
+/* 1. Branco (Light Theme) */
+.bw-theme-branco {
+    --bw-color-bg-grad: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    --bw-color-accent: #0284c7;
+    --bw-color-accent-hover: #0369a1;
+    --bw-color-text-primary: #0f172a;
+    --bw-color-text-secondary: #475569;
+    --bw-color-card-bg: rgba(255, 255, 255, 0.75);
+    --bw-color-card-border: rgba(255, 255, 255, 0.6);
+    --bw-color-input-bg: rgba(255, 255, 255, 0.9);
 }
 
-/* Progress Bar */
-.gh-progress-bar {
+/* 2. Dark (Escuro Moderno) */
+.bw-theme-dark {
+    --bw-color-bg-grad: linear-gradient(135deg, #0f172a 0%, #020617 100%);
+    --bw-color-accent: #3b82f6;
+    --bw-color-accent-hover: #2563eb;
+    --bw-color-text-primary: #f8fafc;
+    --bw-color-text-secondary: #94a3b8;
+    --bw-color-card-bg: rgba(30, 41, 59, 0.6);
+    --bw-color-card-border: rgba(255, 255, 255, 0.1);
+    --bw-color-input-bg: rgba(15, 23, 42, 0.8);
+}
+
+/* 3. Blue Ocean */
+.bw-theme-blue-ocean {
+    --bw-color-bg-grad: radial-gradient(circle at bottom right, #001e36 0%, #004e92 100%);
+    --bw-color-accent: #0ea5e9;
+    --bw-color-accent-hover: #0284c7;
+    --bw-color-text-primary: #f0f9ff;
+    --bw-color-text-secondary: #bae6fd;
+    --bw-color-card-bg: rgba(0, 30, 54, 0.5);
+    --bw-color-card-border: rgba(255, 255, 255, 0.15);
+    --bw-color-input-bg: rgba(0, 15, 30, 0.6);
+}
+
+/* 4. Aurora */
+.bw-theme-aurora {
+    --bw-color-bg-grad: radial-gradient(circle at top left, #0f172a 0%, #1e1b4b 50%, #020617 100%);
+    --bw-color-accent: #8b5cf6;
+    --bw-color-accent-hover: #7c3aed;
+    --bw-color-text-primary: #f8fafc;
+    --bw-color-text-secondary: #a78bfa;
+    --bw-color-card-bg: rgba(30, 27, 75, 0.5);
+    --bw-color-card-border: rgba(255, 255, 255, 0.15);
+    --bw-color-input-bg: rgba(15, 23, 42, 0.6);
+}
+
+/* 5. Green Forest */
+.bw-theme-green-forest {
+    --bw-color-bg-grad: radial-gradient(circle at top left, #064e3b 0%, #022c22 100%);
+    --bw-color-accent: #10b981;
+    --bw-color-accent-hover: #059669;
+    --bw-color-text-primary: #ecfdf5;
+    --bw-color-text-secondary: #a7f3d0;
+    --bw-color-card-bg: rgba(6, 78, 59, 0.5);
+    --bw-color-card-border: rgba(255, 255, 255, 0.15);
+    --bw-color-input-bg: rgba(2, 44, 34, 0.6);
+}
+
+/* 6. Lilac (Tons Pastel Clientes) */
+.bw-theme-lilac {
+    --bw-color-bg-grad: linear-gradient(135deg, #faf5ff 0%, #e9d5ff 100%);
+    --bw-color-accent: #9333ea;
+    --bw-color-accent-hover: #7e22ce;
+    --bw-color-text-primary: #3b0764;
+    --bw-color-text-secondary: #6b21a8;
+    --bw-color-card-bg: rgba(255, 255, 255, 0.65);
+    --bw-color-card-border: rgba(255, 255, 255, 0.5);
+    --bw-color-input-bg: rgba(255, 255, 255, 0.85);
+}
+
+/* 7. Yellow Sunset */
+.bw-theme-yellow-sunset {
+    --bw-color-bg-grad: linear-gradient(135deg, #fffbeb 0%, #fde68a 100%);
+    --bw-color-accent: #d97706;
+    --bw-color-accent-hover: #b45309;
+    --bw-color-text-primary: #451a03;
+    --bw-color-text-secondary: #78350f;
+    --bw-color-card-bg: rgba(255, 255, 255, 0.6);
+    --bw-color-card-border: rgba(255, 255, 255, 0.5);
+    --bw-color-input-bg: rgba(255, 255, 255, 0.8);
+}
+
+/* 8. Red */
+.bw-theme-red {
+    --bw-color-bg-grad: radial-gradient(circle at top right, #4c0519 0%, #7f1d1d 100%);
+    --bw-color-accent: #f43f5e;
+    --bw-color-accent-hover: #e11d48;
+    --bw-color-text-primary: #fff1f2;
+    --bw-color-text-secondary: #fecdd3;
+    --bw-color-card-bg: rgba(76, 5, 25, 0.5);
+    --bw-color-card-border: rgba(255, 255, 255, 0.15);
+    --bw-color-input-bg: rgba(40, 0, 10, 0.6);
+}
+
+
+/* ==========================================================
+ * ESTRUTURA BASE (NORMAL E FULLSCREEN)
+ * ========================================================== */
+
+/* Container Mestre */
+.bw-wizard-wrapper {
+    width: 100%;
+    margin: 40px auto;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--bw-color-text-primary);
+}
+
+/* O Cartão de Vidro Interno */
+.bw-wizard-content-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    background: var(--bw-color-card-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--bw-color-card-border);
+    border-radius: 24px;
+    padding: 2.5rem;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+/* Tipografia Base */
+.bw-wizard-wrapper h3 {
+    color: var(--bw-color-text-primary);
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    letter-spacing: -0.02em;
+}
+
+
+/* ==========================================================
+ * MODO TRUE FULLSCREEN (À prova do Tema WP)
+ * ========================================================== */
+body.bw-booking-fullscreen {
+    overflow: hidden !important; /* Impede rolagem do tema de fundo */
+}
+
+/* O wrapper vira o Overlay Gigante da tela */
+body.bw-booking-fullscreen .bw-wizard-wrapper {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    margin: 0 !important;
+    z-index: 9999999 !important; /* Fica acima de TUDO no site */
+    background: var(--bw-color-bg-grad) !important;
+    overflow-y: auto !important; /* Adiciona barra de rolagem apenas no wizard se for longo */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    box-sizing: border-box;
+}
+
+/* O cartão ganha peso visual no modo tela cheia */
+body.bw-booking-fullscreen .bw-wizard-content-inner {
+    width: 100%;
+    margin-top: auto;
+    margin-bottom: auto; /* Centraliza verticalmente */
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+}
+
+
+/* ==========================================================
+ * PROGRESS BAR & STEPS
+ * ========================================================== */
+.bw-progress-bar {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 30px;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 10px;
+    margin-bottom: 2rem;
+    position: relative;
+    padding-bottom: 1rem;
+    overflow-x: auto;
 }
-.gh-step {
-    font-size: 14px;
-    color: #999;
-    font-weight: 600;
+.bw-progress-bar::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--bw-color-card-border);
+    border-radius: 2px;
 }
-.gh-step.active {
-    color: #0073aa;
-    border-bottom: 2px solid #0073aa;
+.bw-step {
+    font-size: 0.85rem;
+    color: var(--bw-color-text-secondary);
+    font-weight: 500;
+    position: relative;
+    padding-bottom: 0.5rem;
+    white-space: nowrap;
+    margin-right: 15px;
+    transition: color 0.3s;
+}
+.bw-step.active {
+    color: var(--bw-color-accent);
+}
+.bw-step.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1rem;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--bw-color-accent);
+    border-radius: 2px;
+    z-index: 2;
+    box-shadow: 0 0 10px var(--bw-color-accent);
+}
+.bw-step-content {
+    display: none;
+    animation: bwFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.bw-step-content.active {
+    display: block;
+}
+@keyframes bwFadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-/* Steps Content */
-.gh-step-content {
-    display: none; /* Esconde todos */
-    animation: fadeIn 0.3s;
-}
-.gh-step-content.active {
-    display: block; /* Mostra o atual */
-}
 
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-/* Grid Options (Cards) */
-.gh-grid-options {
+/* ==========================================================
+ * CARTÕES (Opções de Seleção)
+ * ========================================================== */
+.bw-grid-options {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 15px;
-    margin-top: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1.2rem;
+    margin-top: 1rem;
 }
-
-.gh-card-option {
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    padding: 15px;
+.bw-card-option {
+    background: var(--bw-color-card-bg);
+    border: 1px solid var(--bw-color-card-border);
+    border-radius: 16px;
+    padding: 1.5rem 1rem;
     text-align: center;
     cursor: pointer;
-    transition: all 0.2s;
-    background: #f9f9f9;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--bw-color-text-primary);
 }
-.gh-card-option:hover {
-    border-color: #0073aa;
-    background: #eef7fb;
-    transform: translateY(-2px);
+.bw-card-option:hover, .bw-card-option:focus-visible {
+    border-color: var(--bw-color-accent);
+    transform: translateY(-4px);
+    outline: none;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
 }
-.gh-card-option h4 {
-    margin: 10px 0 5px 0;
-    font-size: 16px;
+.bw-card-option h4 {
+    margin: 12px 0 4px 0;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--bw-color-text-primary);
+}
+.bw-slots-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 12px;
+    margin-top: 1rem;
 }
 
-/* Buttons */
-.gh-btn-back {
-    background: none;
-    border: none;
-    color: #666;
-    cursor: pointer;
-    text-decoration: underline;
-    margin-bottom: 15px;
+
+/* ==========================================================
+ * INPUTS E FORMULÁRIOS
+ * ========================================================== */
+.bw-input-group label {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--bw-color-text-secondary);
+    margin-bottom: 6px;
 }
-.gh-btn-secondary {
-    background: #f0f0f1;
-    border: 1px solid #ccc;
-    padding: 10px 20px;
-    border-radius: 4px;
-    cursor: pointer;
+.bw-input, .bw-wizard-wrapper input[type="date"], .bw-wizard-wrapper input[type="text"] {
+    width: 100%;
+    background: var(--bw-color-input-bg);
+    border: 1px solid var(--bw-color-card-border);
+    color: var(--bw-color-text-primary);
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 1rem;
+    transition: border 0.3s, box-shadow 0.3s;
+    box-sizing: border-box;
 }
-.gh-btn-primary {
-    background: #0073aa;
-    color: #fff;
+.bw-input:focus, .bw-wizard-wrapper input[type="text"]:focus, .bw-wizard-wrapper input[type="date"]:focus {
+    outline: none;
+    border-color: var(--bw-color-accent);
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+}
+
+
+/* ==========================================================
+ * BOTÕES (Agora com suporte flex para ícones)
+ * ========================================================== */
+.bw-btn-back, .bw-btn-primary, .bw-btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px; /* Espaço entre o ícone e o texto */
+}
+.bw-btn-back {
+    background: transparent;
+    border: 1px solid var(--bw-color-card-border);
+    color: var(--bw-color-text-secondary);
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    margin-bottom: 1.5rem;
+    transition: all 0.2s;
+}
+.bw-btn-back:hover, .bw-btn-back:focus-visible {
+    background: var(--bw-color-card-bg);
+    color: var(--bw-color-text-primary);
+    outline: none;
+}
+.bw-btn-primary {
+    background: var(--bw-color-accent);
+    color: #fff; /* O texto do botão primário sempre branco para contraste */
     border: none;
+    padding: 14px 28px;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    width: 100%;
+}
+.bw-btn-primary:hover, .bw-btn-primary:focus-visible {
+    background: var(--bw-color-accent-hover);
+    outline: 2px solid var(--bw-color-text-primary);
+    outline-offset: 2px;
+}
+.bw-btn-secondary {
+    background: var(--bw-color-card-bg);
+    border: 1px solid var(--bw-color-card-border);
+    color: var(--bw-color-text-primary);
     padding: 12px 24px;
-    border-radius: 4px;
-    font-size: 16px;
+    border-radius: 12px;
     cursor: pointer;
+    transition: all 0.2s;
+}
+.bw-btn-secondary:hover {
+    border-color: var(--bw-color-accent);
+}
+
+
+/* ==========================================================
+ * RESUMO
+ * ========================================================== */
+.bw-summary {
+    background: var(--bw-color-input-bg);
+    border: 1px solid var(--bw-color-card-border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+.bw-summary p {
+    margin: 0 0 8px 0;
+    color: var(--bw-color-text-secondary);
+}
+.bw-summary span {
+    color: var(--bw-color-text-primary);
+    font-weight: 500;
+}
+
+
+/* ==========================================================
+ * RESPONSIVIDADE (Mobile)
+ * ========================================================== */
+@media screen and (max-width: 768px) {
+    body.bw-booking-fullscreen .bw-wizard-wrapper {
+        padding: 0; /* Em mobile, não precisa de margem pro vidro */
+    }
+    .bw-wizard-content-inner {
+        padding: 1.5rem;
+        border-radius: 0; /* Vidro encosta nas bordas */
+        min-height: 100vh;
+        border: none;
+    }
+    .bw-progress-bar {
+        padding-bottom: 0.5rem;
+    }
+    .bw-step {
+        font-size: 0.75rem;
+        margin-right: 10px;
+    }
+    .bw-grid-options {
+        grid-template-columns: 1fr;
+    }
+    .bw-slots-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
 }

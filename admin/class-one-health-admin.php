@@ -63,11 +63,14 @@ class One_Health_Admin {
 		add_action( 'admin_post_gh_save_schedule', array( $this, 'handle_save_schedule' ) );
 		add_action( 'admin_post_gh_delete_schedule', array( $this, 'handle_delete_schedule' ) );
 		add_action( 'admin_post_gh_generate_slots', array( $this, 'handle_generate_slots' ) );
+
+		// Design:
+		add_action( 'admin_post_gh_save_design', array( $this, 'handle_save_design' ) );
 	}
 
 	/**
-	 * Scripts e Estilos
-	 */
+	* Scripts e Estilos
+	*/
 	public function enqueue_scripts() {
 		if ( ! did_action( 'wp_enqueue_media' ) ) {
 			wp_enqueue_media();
@@ -76,7 +79,8 @@ class One_Health_Admin {
 	}
 
 	public function enqueue_styles() {
-		// Placeholder para CSS futuro
+        // [ALTERADO] Carrega o CSS moderno do Admin UI
+        wp_enqueue_style( $this->plugin_name . '-admin', plugin_dir_url( __FILE__ ) . 'css/one-health-admin.css', array(), $this->version, 'all' );
 	}
 
 	/**
@@ -92,6 +96,7 @@ class One_Health_Admin {
 		add_submenu_page( 'one-health', 'Serviços', 'Serviços', 'manage_options', 'one-health-servicos', array( $this, 'display_servicos_page' ) );
 		add_submenu_page( 'one-health', 'Convênios', 'Convênios', 'manage_options', 'one-health-convenios', array( $this, 'display_convenios_page' ) );
 		add_submenu_page( 'one-health', 'Gerar Agenda', 'Gerar Agenda', 'manage_options', 'one-health-gerar-agenda', array( $this, 'display_gerar_agenda_page' ) );
+		add_submenu_page( 'one-health', 'Design', 'Design', 'manage_options', 'one-health-design', array( $this, 'display_design_page' ) );
 	}
 
 	/**
@@ -124,6 +129,22 @@ class One_Health_Admin {
     // [ALTERADO] Aponta para o arquivo real em vez de echo "Em breve"
 	public function display_gerar_agenda_page() {
 		require_once plugin_dir_path( __FILE__ ) . 'views/html-gerar-agenda.php';
+	}
+
+	public function display_design_page() {
+		require_once plugin_dir_path( __FILE__ ) . 'views/html-design.php';
+	}
+
+	public function handle_save_design() {
+		if ( ! current_user_can( 'manage_options' ) ) wp_die( 'Permissão negada.' );
+		check_admin_referer( 'gh_save_design_nonce', 'gh_security' );
+		
+		if ( isset( $_POST['gh_theme'] ) ) {
+			update_option( 'gh_theme', sanitize_text_field( $_POST['gh_theme'] ) );
+		}
+		
+		wp_redirect( admin_url( 'admin.php?page=one-health-design&message=saved' ) );
+		exit;
 	}
 
 	/**

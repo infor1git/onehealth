@@ -1,0 +1,68 @@
+/* * Admin UI/UX Refactoring - Native WP + Subtle Glassmorphism
+ */
+
+/* Suavizando as caixas padrão do WP */
+.postbox {
+    background: rgba(255, 255, 255, 0.85) !important;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03) !important;
+}
+.postbox .hndle {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+    font-weight: 600 !important;
+}
+
+/* Campos de entrada com toque moderno */
+input[type=text], input[type=search], input[type=email], input[type=url], input[type=password], select, textarea {
+    border-radius: 6px !important;
+    border: 1px solid #ccc !important;
+    transition: box-shadow 0.2s, border-color 0.2s;
+}
+input[type=text]:focus, select:focus {
+    border-color: #007cba !important;
+    box-shadow: 0 0 0 1px #007cba !important;
+}
+
+/* Tabelas Responsivas para Admin WP */
+@media screen and (max-width: 782px) {
+    .wp-list-table {
+        border: none !important;
+        box-shadow: none !important;
+    }
+    .wp-list-table thead, 
+    .wp-list-table tfoot {
+        display: none; /* Esconde headers da tabela no mobile */
+    }
+    .wp-list-table tbody tr {
+        display: block;
+        background: #fff;
+        border: 1px solid #e2e4e7;
+        margin-bottom: 1rem;
+        border-radius: 12px;
+        padding: 10px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    .wp-list-table tbody td {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        border-bottom: 1px solid #f0f0f1 !important;
+        padding: 10px 5px !important;
+        font-size: 14px;
+    }
+    .wp-list-table tbody td:last-child {
+        border-bottom: none !important;
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: 8px;
+    }
+    /* Usando pseudo-elementos para simular os headers das colunas (Opcional se precisar de labels fixas) */
+    .wp-list-table tbody td::before {
+        content: attr(data-colname);
+        font-weight: 600;
+        color: #555;
+    }
+}
