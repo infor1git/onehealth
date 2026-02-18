@@ -1,405 +1,237 @@
-/* UI/UX Refactoring - Múltiplos Temas & True Fullscreen */
-
 /* ==========================================================
- * MÚLTIPLOS TEMAS DE CORES
+ * VERDADEIRO FULLSCREEN (Blindagem Absoluta contra Tema)
  * ========================================================== */
-
-/* 1. Branco (Light Theme) */
-.bw-theme-branco {
-    --bw-color-bg-grad: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-    --bw-color-accent: #0284c7;
-    --bw-color-accent-hover: #0369a1;
-    --bw-color-text-primary: #0f172a;
-    --bw-color-text-secondary: #475569;
-    --bw-color-card-bg: rgba(255, 255, 255, 0.75);
-    --bw-color-card-border: rgba(255, 255, 255, 0.6);
-    --bw-color-input-bg: rgba(255, 255, 255, 0.9);
+body.bw-booking-fullscreen {
+    overflow: hidden !important; 
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
-/* 2. Dark (Escuro Moderno) */
-.bw-theme-dark {
-    --bw-color-bg-grad: linear-gradient(135deg, #0f172a 0%, #020617 100%);
-    --bw-color-accent: #3b82f6;
-    --bw-color-accent-hover: #2563eb;
-    --bw-color-text-primary: #f8fafc;
-    --bw-color-text-secondary: #94a3b8;
-    --bw-color-card-bg: rgba(30, 41, 59, 0.6);
-    --bw-color-card-border: rgba(255, 255, 255, 0.1);
-    --bw-color-input-bg: rgba(15, 23, 42, 0.8);
+body.bw-booking-fullscreen .bw-wizard-wrapper {
+    position: fixed !important;
+    top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
+    width: 100vw !important; height: 100vh !important;
+    z-index: 2147483647 !important; /* Fica acima do cabeçalho de qualquer tema */
+    background: var(--bw-color-bg-grad) !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 30px 15px;
+    box-sizing: border-box;
+    overflow-y: auto !important; 
 }
 
-/* 3. Blue Ocean */
-.bw-theme-blue-ocean {
-    --bw-color-bg-grad: radial-gradient(circle at bottom right, #001e36 0%, #004e92 100%);
-    --bw-color-accent: #0ea5e9;
-    --bw-color-accent-hover: #0284c7;
-    --bw-color-text-primary: #f0f9ff;
-    --bw-color-text-secondary: #bae6fd;
-    --bw-color-card-bg: rgba(0, 30, 54, 0.5);
-    --bw-color-card-border: rgba(255, 255, 255, 0.15);
-    --bw-color-input-bg: rgba(0, 15, 30, 0.6);
-}
-
-/* 4. Aurora */
-.bw-theme-aurora {
-    --bw-color-bg-grad: radial-gradient(circle at top left, #0f172a 0%, #1e1b4b 50%, #020617 100%);
-    --bw-color-accent: #8b5cf6;
-    --bw-color-accent-hover: #7c3aed;
-    --bw-color-text-primary: #f8fafc;
-    --bw-color-text-secondary: #a78bfa;
-    --bw-color-card-bg: rgba(30, 27, 75, 0.5);
-    --bw-color-card-border: rgba(255, 255, 255, 0.15);
-    --bw-color-input-bg: rgba(15, 23, 42, 0.6);
-}
-
-/* 5. Green Forest */
-.bw-theme-green-forest {
-    --bw-color-bg-grad: radial-gradient(circle at top left, #064e3b 0%, #022c22 100%);
-    --bw-color-accent: #10b981;
-    --bw-color-accent-hover: #059669;
-    --bw-color-text-primary: #ecfdf5;
-    --bw-color-text-secondary: #a7f3d0;
-    --bw-color-card-bg: rgba(6, 78, 59, 0.5);
-    --bw-color-card-border: rgba(255, 255, 255, 0.15);
-    --bw-color-input-bg: rgba(2, 44, 34, 0.6);
-}
-
-/* 6. Lilac (Tons Pastel Clientes) */
-.bw-theme-lilac {
-    --bw-color-bg-grad: linear-gradient(135deg, #faf5ff 0%, #e9d5ff 100%);
-    --bw-color-accent: #9333ea;
-    --bw-color-accent-hover: #7e22ce;
-    --bw-color-text-primary: #3b0764;
-    --bw-color-text-secondary: #6b21a8;
-    --bw-color-card-bg: rgba(255, 255, 255, 0.65);
-    --bw-color-card-border: rgba(255, 255, 255, 0.5);
-    --bw-color-input-bg: rgba(255, 255, 255, 0.85);
-}
-
-/* 7. Yellow Sunset */
-.bw-theme-yellow-sunset {
-    --bw-color-bg-grad: linear-gradient(135deg, #fffbeb 0%, #fde68a 100%);
-    --bw-color-accent: #d97706;
-    --bw-color-accent-hover: #b45309;
-    --bw-color-text-primary: #451a03;
-    --bw-color-text-secondary: #78350f;
-    --bw-color-card-bg: rgba(255, 255, 255, 0.6);
-    --bw-color-card-border: rgba(255, 255, 255, 0.5);
-    --bw-color-input-bg: rgba(255, 255, 255, 0.8);
-}
-
-/* 8. Red */
-.bw-theme-red {
-    --bw-color-bg-grad: radial-gradient(circle at top right, #4c0519 0%, #7f1d1d 100%);
-    --bw-color-accent: #f43f5e;
-    --bw-color-accent-hover: #e11d48;
-    --bw-color-text-primary: #fff1f2;
-    --bw-color-text-secondary: #fecdd3;
-    --bw-color-card-bg: rgba(76, 5, 25, 0.5);
-    --bw-color-card-border: rgba(255, 255, 255, 0.15);
-    --bw-color-input-bg: rgba(40, 0, 10, 0.6);
-}
-
-
-/* ==========================================================
- * ESTRUTURA BASE (NORMAL E FULLSCREEN)
- * ========================================================== */
-
-/* Container Mestre */
-.bw-wizard-wrapper {
-    width: 100%;
-    margin: 40px auto;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    color: var(--bw-color-text-primary);
-}
-
-/* O Cartão de Vidro Interno */
 .bw-wizard-content-inner {
-    max-width: 900px;
-    margin: 0 auto;
+    width: 100%;
+    max-width: 950px;
     background: var(--bw-color-card-bg);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
     border: 1px solid var(--bw-color-card-border);
     border-radius: 24px;
     padding: 2.5rem;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-    transition: all 0.3s ease;
-}
-
-/* Tipografia Base */
-.bw-wizard-wrapper h3 {
+    box-shadow: 0 30px 60px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.1);
     color: var(--bw-color-text-primary);
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin-bottom: 1.5rem;
-    letter-spacing: -0.02em;
+    margin: auto; /* Centraliza verticalmente se a tela for muito grande */
 }
-
 
 /* ==========================================================
- * MODO TRUE FULLSCREEN (À prova do Tema WP)
+ * CABEÇALHO DO WIZARD (Logomarca)
  * ========================================================== */
-body.bw-booking-fullscreen {
-    overflow: hidden !important; /* Impede rolagem do tema de fundo */
-}
-
-/* O wrapper vira o Overlay Gigante da tela */
-body.bw-booking-fullscreen .bw-wizard-wrapper {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    margin: 0 !important;
-    z-index: 9999999 !important; /* Fica acima de TUDO no site */
-    background: var(--bw-color-bg-grad) !important;
-    overflow-y: auto !important; /* Adiciona barra de rolagem apenas no wizard se for longo */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 40px 20px;
-    box-sizing: border-box;
-}
-
-/* O cartão ganha peso visual no modo tela cheia */
-body.bw-booking-fullscreen .bw-wizard-content-inner {
-    width: 100%;
-    margin-top: auto;
-    margin-bottom: auto; /* Centraliza verticalmente */
-    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
-}
-
-
-/* ==========================================================
- * PROGRESS BAR & STEPS
- * ========================================================== */
-.bw-progress-bar {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 2rem;
-    position: relative;
-    padding-bottom: 1rem;
-    overflow-x: auto;
-}
-.bw-progress-bar::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    background: var(--bw-color-card-border);
-    border-radius: 2px;
-}
-.bw-step {
-    font-size: 0.85rem;
-    color: var(--bw-color-text-secondary);
-    font-weight: 500;
-    position: relative;
-    padding-bottom: 0.5rem;
-    white-space: nowrap;
-    margin-right: 15px;
-    transition: color 0.3s;
-}
-.bw-step.active {
-    color: var(--bw-color-accent);
-}
-.bw-step.active::after {
-    content: '';
-    position: absolute;
-    bottom: -1rem;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    background: var(--bw-color-accent);
-    border-radius: 2px;
-    z-index: 2;
-    box-shadow: 0 0 10px var(--bw-color-accent);
-}
-.bw-step-content {
-    display: none;
-    animation: bwFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.bw-step-content.active {
-    display: block;
-}
-@keyframes bwFadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-
-/* ==========================================================
- * CARTÕES (Opções de Seleção)
- * ========================================================== */
-.bw-grid-options {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 1.2rem;
-    margin-top: 1rem;
-}
-.bw-card-option {
-    background: var(--bw-color-card-bg);
-    border: 1px solid var(--bw-color-card-border);
-    border-radius: 16px;
-    padding: 1.5rem 1rem;
+.bw-wizard-header {
     text-align: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    margin-bottom: 2.5rem;
+}
+.bw-wizard-logo {
+    max-height: 70px;
+    width: auto;
+    object-fit: contain;
+    border-radius: 8px;
+}
+.bw-wizard-title {
     color: var(--bw-color-text-primary);
+    font-weight: 300;
+    font-size: 2.2rem;
+    margin: 0;
+    letter-spacing: -1px;
 }
-.bw-card-option:hover, .bw-card-option:focus-visible {
-    border-color: var(--bw-color-accent);
-    transform: translateY(-4px);
-    outline: none;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-}
-.bw-card-option h4 {
-    margin: 12px 0 4px 0;
-    font-size: 1rem;
-    font-weight: 500;
-    color: var(--bw-color-text-primary);
-}
-.bw-slots-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 12px;
-    margin-top: 1rem;
-}
-
 
 /* ==========================================================
- * INPUTS E FORMULÁRIOS
+ * TEMAS E VARIÁVEIS (Mantidos e reforçados)
  * ========================================================== */
-.bw-input-group label {
-    display: block;
-    font-size: 0.9rem;
-    color: var(--bw-color-text-secondary);
-    margin-bottom: 6px;
+/* TEMA BRANCO COM MELHOR CONTRASTE DE GLASSMORPHISM */
+.bw-theme-branco { 
+    --bw-color-bg-grad: linear-gradient(135deg, #e2e8f0 0%, #f8fafc 100%); 
+    --bw-color-accent: #0ea5e9; 
+    --bw-color-text-primary: #0f172a; 
+    --bw-color-text-secondary: #475569; 
+    --bw-color-card-bg: rgba(255, 255, 255, 0.65); 
+    --bw-color-card-border: rgba(0, 0, 0, 0.1); /* Borda escurecida para contraste */
+    --bw-color-input-bg: rgba(255, 255, 255, 0.95); 
 }
-.bw-input, .bw-wizard-wrapper input[type="date"], .bw-wizard-wrapper input[type="text"] {
-    width: 100%;
-    background: var(--bw-color-input-bg);
-    border: 1px solid var(--bw-color-card-border);
-    color: var(--bw-color-text-primary);
-    padding: 12px 16px;
-    border-radius: 12px;
-    font-size: 1rem;
-    transition: border 0.3s, box-shadow 0.3s;
+.bw-theme-dark { --bw-color-bg-grad: linear-gradient(135deg, #0f172a 0%, #020617 100%); --bw-color-accent: #3b82f6; --bw-color-accent-hover: #2563eb; --bw-color-text-primary: #f8fafc; --bw-color-text-secondary: #94a3b8; --bw-color-card-bg: rgba(30, 41, 59, 0.6); --bw-color-card-border: rgba(255, 255, 255, 0.1); --bw-color-input-bg: rgba(15, 23, 42, 0.8); }
+.bw-theme-blue-ocean { --bw-color-bg-grad: radial-gradient(circle at bottom right, #001e36 0%, #004e92 100%); --bw-color-accent: #0ea5e9; --bw-color-accent-hover: #0284c7; --bw-color-text-primary: #f0f9ff; --bw-color-text-secondary: #bae6fd; --bw-color-card-bg: rgba(0, 30, 54, 0.5); --bw-color-card-border: rgba(255, 255, 255, 0.15); --bw-color-input-bg: rgba(0, 15, 30, 0.6); }
+.bw-theme-aurora { --bw-color-bg-grad: radial-gradient(circle at top left, #0f172a 0%, #1e1b4b 50%, #020617 100%); --bw-color-accent: #8b5cf6; --bw-color-accent-hover: #7c3aed; --bw-color-text-primary: #f8fafc; --bw-color-text-secondary: #a78bfa; --bw-color-card-bg: rgba(30, 27, 75, 0.5); --bw-color-card-border: rgba(255, 255, 255, 0.15); --bw-color-input-bg: rgba(15, 23, 42, 0.6); }
+.bw-theme-green-forest { --bw-color-bg-grad: radial-gradient(circle at top left, #064e3b 0%, #022c22 100%); --bw-color-accent: #10b981; --bw-color-accent-hover: #059669; --bw-color-text-primary: #ecfdf5; --bw-color-text-secondary: #a7f3d0; --bw-color-card-bg: rgba(6, 78, 59, 0.5); --bw-color-card-border: rgba(255, 255, 255, 0.15); --bw-color-input-bg: rgba(2, 44, 34, 0.6); }
+.bw-theme-lilac { --bw-color-bg-grad: linear-gradient(135deg, #faf5ff 0%, #e9d5ff 100%); --bw-color-accent: #9333ea; --bw-color-accent-hover: #7e22ce; --bw-color-text-primary: #3b0764; --bw-color-text-secondary: #6b21a8; --bw-color-card-bg: rgba(255, 255, 255, 0.65); --bw-color-card-border: rgba(255, 255, 255, 0.5); --bw-color-input-bg: rgba(255, 255, 255, 0.85); }
+.bw-theme-yellow-sunset { --bw-color-bg-grad: linear-gradient(135deg, #fffbeb 0%, #fde68a 100%); --bw-color-accent: #d97706; --bw-color-accent-hover: #b45309; --bw-color-text-primary: #451a03; --bw-color-text-secondary: #78350f; --bw-color-card-bg: rgba(255, 255, 255, 0.6); --bw-color-card-border: rgba(255, 255, 255, 0.5); --bw-color-input-bg: rgba(255, 255, 255, 0.8); }
+.bw-theme-red { --bw-color-bg-grad: radial-gradient(circle at top right, #4c0519 0%, #7f1d1d 100%); --bw-color-accent: #f43f5e; --bw-color-accent-hover: #e11d48; --bw-color-text-primary: #fff1f2; --bw-color-text-secondary: #fecdd3; --bw-color-card-bg: rgba(76, 5, 25, 0.5); --bw-color-card-border: rgba(255, 255, 255, 0.15); --bw-color-input-bg: rgba(40, 0, 10, 0.6); }
+
+/* ==========================================================
+ * PROGRESS BAR E NAVEGAÇÃO
+ * ========================================================== */
+.bw-wizard-wrapper h3 { font-size: 1.5rem; font-weight: 600; margin-top: 0; margin-bottom: 1.5rem; }
+.bw-progress-bar { display: flex; justify-content: space-between; margin-bottom: 2rem; position: relative; padding-bottom: 1rem; overflow-x: auto; }
+.bw-progress-bar::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 2px; background: var(--bw-color-card-border); border-radius: 2px; }
+.bw-step { font-size: 0.9rem; color: var(--bw-color-text-secondary); font-weight: 500; position: relative; padding-bottom: 0.5rem; white-space: nowrap; transition: all 0.3s; cursor: pointer; opacity: 0.5;}
+.bw-step.active { color: var(--bw-color-accent); cursor: pointer; opacity: 1;}
+.bw-step.active::after { content: ''; position: absolute; bottom: -1rem; left: 0; width: 100%; height: 2px; background: var(--bw-color-accent); z-index: 2; box-shadow: 0 0 10px var(--bw-color-accent); transition: width 0.3s;}
+.bw-step-content { display: none; animation: bwFadeIn 0.3s ease-out forwards; }
+.bw-step-content.active { display: block; }
+@keyframes bwFadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ==========================================================
+ * CALENDÁRIO VISUAL DIVIDIDO E HORÁRIOS
+ * ========================================================== */
+.bw-calendar-layout { display: flex; gap: 2.5rem; align-items: flex-start; }
+.bw-calendar-col { flex: 0 0 350px; background: rgba(0,0,0,0.05); padding: 1.5rem; border-radius: 20px; border: 1px solid var(--bw-color-card-border); box-shadow: inset 0 2px 10px rgba(0,0,0,0.05); }
+.bw-slots-col { flex: 1; }
+
+.bw-cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+.bw-cal-nav { background: var(--bw-color-input-bg); border: 1px solid var(--bw-color-card-border); color: var(--bw-color-text-primary); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; }
+.bw-cal-nav:hover { background: var(--bw-color-accent); color: #fff; border-color: var(--bw-color-accent); transform: scale(1.1); }
+
+.bw-cal-days-header { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 0.8rem; color: var(--bw-color-text-secondary); margin-bottom: 0.8rem; font-weight: 600; text-transform: uppercase; }
+.bw-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+
+.bw-cal-empty { padding: 10px 0; } /* Para alinhar o primeiro dia do mês */
+.bw-cal-day { padding: 10px 0; text-align: center; border-radius: 12px; font-size: 1rem; font-weight: 500; cursor: pointer; border: 1px solid transparent; transition: all 0.2s; }
+.bw-cal-day.disabled { opacity: 0.3; pointer-events: none; background: rgba(0,0,0,0.05); }
+.bw-cal-day.available { background: var(--bw-color-input-bg); border: 1px solid var(--bw-color-card-border); box-shadow: 0 2px 5px rgba(0,0,0,0.05); color: var(--bw-color-text-primary); }
+.bw-cal-day.available:hover { border-color: var(--bw-color-accent); transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.1); background: var(--bw-color-card-bg); }
+.bw-cal-day.selected { background: var(--bw-color-accent) !important; color: #fff !important; border-color: var(--bw-color-accent) !important; box-shadow: 0 6px 15px rgba(0,0,0,0.2) !important; transform: scale(1.08); }
+
+.bw-slots-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 15px; }
+
+/* ==========================================================
+ * CARTÕES (Opções de Seleção e Horários)
+ * ========================================================== */
+.bw-grid-options { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1.5rem; }
+.bw-card-option { background: var(--bw-color-input-bg); border: 1px solid var(--bw-color-card-border); border-radius: 18px; padding: 2rem 1.5rem; text-align: center; cursor: pointer; transition: all 0.2s ease; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--bw-color-text-primary); box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
+.bw-card-option:hover { border-color: var(--bw-color-accent); transform: translateY(-5px); box-shadow: 0 12px 25px rgba(0,0,0,0.15); background: var(--bw-color-card-bg); }
+.bw-card-option h4 { margin: 15px 0 5px 0; font-size: 1.1rem; font-weight: 500; }
+.bw-slot-card { padding: 1.2rem !important; }
+
+/* ==========================================================
+ * BOTÕES ALTAMENTE CONTRASTANTES E BONITOS
+ * ========================================================== */
+.bw-btn-back, .bw-btn-primary, .bw-btn-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 10px; font-family: inherit; }
+
+/* Botão Secundário (como o Qualquer Profissional) */
+.bw-btn-secondary { background: var(--bw-color-input-bg); border: 1px solid var(--bw-color-card-border); color: var(--bw-color-text-primary); padding: 14px 28px; border-radius: 14px; cursor: pointer; transition: all 0.2s; font-weight: 600; font-size: 1rem; backdrop-filter: blur(5px); box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+.bw-btn-secondary:hover { border-color: var(--bw-color-accent); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.08); background: var(--bw-color-card-bg); }
+
+/* Botão Primário (Avançar/Confirmar) */
+.bw-btn-primary { background: var(--bw-color-accent); color: #fff; border: 1px solid rgba(0,0,0,0.1); box-shadow: 0 6px 15px rgba(0,0,0,0.15); padding: 16px 32px; border-radius: 14px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; width: 100%; text-transform: uppercase; letter-spacing: 0.5px; }
+.bw-btn-primary:hover { transform: translateY(-3px); box-shadow: 0 12px 25px rgba(0,0,0,0.25); filter: brightness(1.1); }
+.bw-btn-primary:disabled { opacity: 0.6; cursor: wait; transform: none; }
+
+/* Botão Voltar Passo Anterior */
+.bw-btn-back { background: var(--bw-color-card-bg); border: 1px solid var(--bw-color-card-border); color: var(--bw-color-text-secondary); padding: 10px 22px; border-radius: 20px; font-weight: 500; transition: all 0.2s; cursor: pointer; font-size: 0.95rem; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+.bw-btn-back:hover { background: var(--bw-color-input-bg); color: var(--bw-color-text-primary); border-color: var(--bw-color-text-secondary); }
+
+/* ==========================================================
+ * INPUTS E RESUMO (Aba de confirmação)
+ * ========================================================== */
+.bw-input-group label { display: block; font-size: 0.95rem; color: var(--bw-color-text-secondary); margin-bottom: 8px; font-weight: 500; }
+.bw-input { width: 100%; background: var(--bw-color-input-bg); border: 1px solid var(--bw-color-card-border); color: var(--bw-color-text-primary); padding: 16px 20px; border-radius: 14px; font-size: 1.05rem; transition: all 0.3s; box-sizing: border-box; }
+.bw-input:focus { outline: none; border-color: var(--bw-color-accent); box-shadow: 0 0 0 4px rgba(59,130,246,0.15); background: var(--bw-color-card-bg); }
+
+.bw-summary { background: rgba(0,0,0,0.15); border: 1px solid var(--bw-color-card-border); border-radius: 18px; padding: 2rem; margin-bottom: 2rem; box-shadow: inset 0 2px 10px rgba(0,0,0,0.05); }
+.bw-summary p { margin: 0 0 10px 0; color: var(--bw-color-text-secondary); font-size: 1.05rem; }
+.bw-summary span { color: var(--bw-color-text-primary); font-weight: 600; }
+
+/* Spin Icon para loading */
+@keyframes dash-spin { 100% { transform: rotate(360deg); } }
+.dashicons.spin { animation: dash-spin 1.5s linear infinite; }
+
+/* ==========================================================
+ * MOBILE 
+ * ========================================================== */
+@media screen and (max-width: 800px) {
+    body.bw-booking-fullscreen .bw-wizard-wrapper { padding: 0; }
+    .bw-wizard-content-inner { padding: 1.5rem; border-radius: 0; min-height: 100vh; border: none; }
+    .bw-calendar-layout { flex-direction: column; gap: 1.5rem; }
+    .bw-calendar-col { max-width: 100%; flex: none; width: 100%; padding: 1rem; box-sizing: border-box;}
+    .bw-slots-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
+    .bw-wizard-title { font-size: 1.8rem; }
+    .bw-step { font-size: 0.75rem; margin-right: 8px;}
+}
+
+/* Scroll Suave na barra de progresso em dispositivos móveis */
+.bw-progress-bar {
+    overflow-x: auto;
+    scrollbar-width: none; /* Firefox */
+}
+.bw-progress-bar::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+}
+
+/* ==========================================================
+ * MODAL (Instruções de Preparo - Glassmorphism)
+ * ========================================================== */
+.bw-modal-overlay {
+    position: fixed !important;
+    top: 0 !important; 
+    left: 0 !important; 
+    width: 100vw !important; 
+    height: 100vh !important;
+    background: rgba(0, 0, 0, 0.6) !important;
+    backdrop-filter: blur(8px) !important; 
+    -webkit-backdrop-filter: blur(8px) !important;
+    z-index: 2147483648 !important; /* Prioridade máxima sobre o fullscreen */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
     box-sizing: border-box;
 }
-.bw-input:focus, .bw-wizard-wrapper input[type="text"]:focus, .bw-wizard-wrapper input[type="date"]:focus {
-    outline: none;
-    border-color: var(--bw-color-accent);
-    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+
+/* Reutiliza as propriedades Glass do container principal para o modal */
+.bw-modal-content {
+    max-width: 650px !important;
+    width: 100% !important;
+    margin: 0 !important;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.5) !important;
+    animation: bwScaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+@keyframes bwScaleUp {
+    from { opacity: 0; transform: scale(0.95) translateY(20px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
 
-/* ==========================================================
- * BOTÕES (Agora com suporte flex para ícones)
- * ========================================================== */
-.bw-btn-back, .bw-btn-primary, .bw-btn-secondary {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px; /* Espaço entre o ícone e o texto */
-}
-.bw-btn-back {
-    background: transparent;
-    border: 1px solid var(--bw-color-card-border);
-    color: var(--bw-color-text-secondary);
-    padding: 8px 16px;
-    border-radius: 20px;
-    cursor: pointer;
-    font-size: 0.85rem;
-    margin-bottom: 1.5rem;
-    transition: all 0.2s;
-}
-.bw-btn-back:hover, .bw-btn-back:focus-visible {
-    background: var(--bw-color-card-bg);
+/* Formatação do texto do preparo que vem do banco de dados (WP Editor) */
+#bw-modal-preparo-text {
     color: var(--bw-color-text-primary);
-    outline: none;
 }
-.bw-btn-primary {
-    background: var(--bw-color-accent);
-    color: #fff; /* O texto do botão primário sempre branco para contraste */
-    border: none;
-    padding: 14px 28px;
-    border-radius: 12px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.2s, transform 0.1s;
-    width: 100%;
-}
-.bw-btn-primary:hover, .bw-btn-primary:focus-visible {
-    background: var(--bw-color-accent-hover);
-    outline: 2px solid var(--bw-color-text-primary);
-    outline-offset: 2px;
-}
-.bw-btn-secondary {
-    background: var(--bw-color-card-bg);
-    border: 1px solid var(--bw-color-card-border);
+#bw-modal-preparo-text h1, 
+#bw-modal-preparo-text h2, 
+#bw-modal-preparo-text h3 {
     color: var(--bw-color-text-primary);
-    padding: 12px 24px;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: all 0.2s;
+    margin-top: 15px;
+    margin-bottom: 10px;
 }
-.bw-btn-secondary:hover {
-    border-color: var(--bw-color-accent);
+#bw-modal-preparo-text ul,
+#bw-modal-preparo-text ol {
+    padding-left: 20px;
+    margin-bottom: 15px;
 }
-
-
-/* ==========================================================
- * RESUMO
- * ========================================================== */
-.bw-summary {
-    background: var(--bw-color-input-bg);
-    border: 1px solid var(--bw-color-card-border);
-    border-radius: 16px;
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
-}
-.bw-summary p {
-    margin: 0 0 8px 0;
-    color: var(--bw-color-text-secondary);
-}
-.bw-summary span {
-    color: var(--bw-color-text-primary);
-    font-weight: 500;
+#bw-modal-preparo-text li {
+    margin-bottom: 8px;
 }
 
-
-/* ==========================================================
- * RESPONSIVIDADE (Mobile)
- * ========================================================== */
-@media screen and (max-width: 768px) {
-    body.bw-booking-fullscreen .bw-wizard-wrapper {
-        padding: 0; /* Em mobile, não precisa de margem pro vidro */
-    }
-    .bw-wizard-content-inner {
-        padding: 1.5rem;
-        border-radius: 0; /* Vidro encosta nas bordas */
-        min-height: 100vh;
-        border: none;
-    }
-    .bw-progress-bar {
-        padding-bottom: 0.5rem;
-    }
-    .bw-step {
-        font-size: 0.75rem;
-        margin-right: 10px;
-    }
-    .bw-grid-options {
-        grid-template-columns: 1fr;
-    }
-    .bw-slots-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
-}
+/* Scrollbar Bonita no texto do modal */
+#bw-modal-preparo-text::-webkit-scrollbar { width: 6px; }
+#bw-modal-preparo-text::-webkit-scrollbar-track { background: transparent; }
+#bw-modal-preparo-text::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }

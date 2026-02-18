@@ -139,10 +139,17 @@ class One_Health_Admin {
 		if ( ! current_user_can( 'manage_options' ) ) wp_die( 'Permissão negada.' );
 		check_admin_referer( 'gh_save_design_nonce', 'gh_security' );
 		
-		if ( isset( $_POST['gh_theme'] ) ) {
-			update_option( 'gh_theme', sanitize_text_field( $_POST['gh_theme'] ) );
-		}
+		if ( isset( $_POST['gh_theme'] ) ) update_option( 'gh_theme', sanitize_text_field( $_POST['gh_theme'] ) );
+		if ( isset( $_POST['gh_wizard_logo'] ) ) update_option( 'gh_wizard_logo', esc_url_raw( $_POST['gh_wizard_logo'] ) );
 		
+        // Lógica da Cor Personalizada
+        if ( isset($_POST['gh_use_default_color']) ) {
+            update_option('gh_accent_color', ''); // Reseta para cor do tema
+        } elseif ( isset($_POST['gh_accent_color']) ) {
+            // Salva a cor garantindo que é um hexadecimal válido
+            update_option('gh_accent_color', sanitize_hex_color($_POST['gh_accent_color']));
+        }
+
 		wp_redirect( admin_url( 'admin.php?page=one-health-design&message=saved' ) );
 		exit;
 	}

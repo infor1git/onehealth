@@ -102,4 +102,35 @@ jQuery(document).ready(function($) {
         $('.gh-esp-checkbox').prop('checked', false);
     });
 
+    /* ----------------------------------------------------------
+     * 5. Upload de Logo do Wizard (Aba Design) - NOVO
+     * ---------------------------------------------------------- */
+    var designLogoUploader;
+    $('#gh_upload_design_logo_button').on('click', function(e) {
+        e.preventDefault();
+        if (typeof wp === 'undefined' || !wp.media) return;
+        if (designLogoUploader) { designLogoUploader.open(); return; }
+
+        designLogoUploader = wp.media({
+            title: 'Escolher Logo do Wizard',
+            button: { text: 'Usar esta logo' },
+            multiple: false
+        });
+
+        designLogoUploader.on('select', function() {
+            var attachment = designLogoUploader.state().get('selection').first().toJSON();
+            $('#gh_design_logo_url').val(attachment.url);
+            $('#gh_design_logo_preview').attr('src', attachment.url);
+            $('#gh_design_logo_preview_container').show();
+        });
+        designLogoUploader.open();
+    });
+
+    $('#gh_remove_design_logo_button').on('click', function(e){
+        e.preventDefault();
+        $('#gh_design_logo_url').val('');
+        $('#gh_design_logo_preview').attr('src', '');
+        $('#gh_design_logo_preview_container').hide();
+    });
+
 });
