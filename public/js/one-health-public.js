@@ -70,7 +70,11 @@ jQuery(document).ready(function($) {
         if (targetStep == 5 && $('#gh-medicos-list .bw-card-option').length === 0) loadMedicos();
         if (targetStep == 6 && $('#bw-cal-grid .bw-cal-day').length === 0) initCalendar();
         
-        if(targetStep == 7) { renderSummary(); }
+        if(targetStep == 7) { 
+            renderSummary(); 
+            // Inicializa ou re-inicializa os dropdowns customizados
+            applyCustomSelects(); 
+        }
         if(!isRestoring) saveBookingState();
     }
 
@@ -188,7 +192,7 @@ jQuery(document).ready(function($) {
         });
     }
 
-    // PASSO 7
+    // PASSO 7 (Resumo Final)
     window.selectSlot = function(id, hora, medico_nome_slot) { bookingData.slot_id = id; bookingData.hora = hora; if(bookingData.medico_id == 0) bookingData.medico_nome = medico_nome_slot; renderSummary(); gh_next_step(7); };
 
     function renderSummary() { 
@@ -197,7 +201,7 @@ jQuery(document).ready(function($) {
     }
 
     // --- AUTENTICAÇÃO E REGISTRO ---
-    $('.bw-auth-tab').on('click', function(){ 
+    $(document).on('click', '.bw-auth-tab', function(){ 
         var parent = $(this).closest('.bw-auth-tabs').parent();
         parent.find('.bw-auth-tab').removeClass('active'); $(this).addClass('active'); 
         parent.find('.bw-auth-form').hide(); $('#' + $(this).data('target')).fadeIn(); 
@@ -208,17 +212,157 @@ jQuery(document).ready(function($) {
         if(cep.length == 8) { $.getJSON('https://viacep.com.br/ws/'+cep+'/json/', function(data) { if(!data.erro) { form.find('[name="rua"]').val(data.logradouro); form.find('[name="bairro"]').val(data.bairro); form.find('[name="cidade"]').val(data.localidade); form.find('[name="uf"]').val(data.uf); form.find('[name="num"]').focus(); } }); }
     });
 
-    $(document).on('change', '.dyn-convenio', function(e, prefillPlanoId) {
-        var form = $(this).closest('form'); var cid = $(this).val(); var planoGroup = form.find('.dyn-plano-group'); var planoSelect = form.find('.dyn-plano');
-        if(cid > 0) {
-            $.post(gh_vars.ajax_url, { action: 'gh_get_planos', convenio_id: cid }, function(res) {
-                if(res.success && res.data.length > 0) {
-                    var opts = '<option value="">Selecione o plano...</option>'; $.each(res.data, function(i, p) { opts += '<option value="'+p.id+'">'+p.nome+'</option>'; });
-                    planoSelect.html(opts); planoGroup.show(); if(prefillPlanoId) planoSelect.val(prefillPlanoId);
-                } else { planoSelect.html('<option value="">Sem planos</option>'); planoGroup.hide(); }
+    // =========================================================================
+    // LÓGICA DO SELECT CUSTOMIZADO (Dropdown Premium) E BUSCA DE PLANOS
+    // =========================================================================
+    function applyCustomSelects() {
+        // Encontra select's ainda não processados (especificamente o de convênio e plano no form de registro)
+        $('select.dyn-convenio:not(.bw-custom-select-applied), select.dyn-plano:not(.bw-custom-select-applied)').each(function() {
+            var $select = $(this);
+            $select.addClass('bw-custom-select-applied');
+            
+            // Cria o Container e as Estruturas
+            var $wrapper = $('<div class="bw-select-wrapper"></div>');
+            var $trigger = $('<div class="bw-select-trigger"><span class="bw-select-text"></span><span class="dashicons dashicons-arrow-down-alt2"></span></div>');
+            var $optionsContainer = $('<div class="bw-select-options"></div>');
+
+            $select.hide().after($wrapper);
+            $wrapper.append($trigger).append($optionsContainer);
+
+            // Popula os dados iniciais
+            updateCustomSelectDOM($select, $trigger, $optionsContainer);
+
+            // Evento de Clique para Abrir/Fechar
+            $trigger.on('click', function(e) {
+                e.stopPropagation();
+                var isOpen = $(this).hasClass('open');
+                
+                // Fecha todos os outros antes de abrir este
+                $('.bw-select-trigger').removeClass('open');
+                $('.bw-select-options').removeClass('show');
+
+                if (!isOpen) {
+                    $(this).addClass('open');
+                    $optionsContainer.addClass('show');
+                }
             });
-        } else { planoSelect.html('<option value="">Selecione um convênio primeiro</option>'); planoGroup.hide(); }
+
+            // Evento ao Clicar em uma Opção Visual
+            $optionsContainer.on('click', '.bw-select-option', function(e) {
+                e.stopPropagation();
+                var value = $(this).data('value');
+                var text = $(this).text();
+                
+                // Atualiza Texto Visual
+                $trigger.find('.bw-select-text').text(text);
+                $optionsContainer.find('.bw-select-option').removeClass('selected');
+                $(this).addClass('selected');
+                
+                $trigger.removeClass('open');
+                $optionsContainer.removeClass('show');
+
+                // Atualiza Select Original
+                if ($select.val() !== value) {
+                    $select.val(value).trigger('change'); // Aciona os outros eventos dependentes
+                }
+            });
+        });
+    }
+
+    // Função que atualiza o DOM visual baseado nas <option> do select escondido
+    function updateCustomSelectDOM($select, $trigger, $optionsContainer) {
+        $optionsContainer.empty();
+        var selectedText = "";
+        
+        $select.find('option').each(function() {
+            var val = $(this).val();
+            var text = $(this).text();
+            var isSelected = $(this).is(':selected');
+
+            if (isSelected) {
+                selectedText = text;
+            }
+
+            var $opt = $('<div class="bw-select-option" data-value="'+val+'">'+text+'</div>');
+            if (isSelected) $opt.addClass('selected');
+            $optionsContainer.append($opt);
+        });
+
+        // Caso a lista de options não tenha dado match (ex: campo dinâmico que esvaziou)
+        if (!selectedText && $select.find('option').length > 0) {
+            selectedText = $select.find('option:first').text();
+            $optionsContainer.find('.bw-select-option:first').addClass('selected');
+        }
+
+        $trigger.find('.bw-select-text').text(selectedText);
+    }
+
+    // Fecha os custom selects ao clicar fora
+    $(document).on('click', function() {
+        $('.bw-select-trigger').removeClass('open');
+        $('.bw-select-options').removeClass('show');
     });
+
+    // EVENTO DE BUSCA DE PLANOS QUANDO O SELECT DE CONVÊNIO MUDA
+    $(document).on('change', 'select.dyn-convenio', function() {
+        var form = $(this).closest('form'); 
+        var cid = parseInt($(this).val()) || 0; 
+        
+        var planoSelect = form.find('select.dyn-plano');
+        var planoGroup = planoSelect.closest('.bw-input-group');
+        
+        if (planoGroup.length === 0) planoGroup = form.find('.dyn-plano-group');
+
+        // Captura elementos visuais customizados para atualização
+        var planoWrapper = planoSelect.next('.bw-select-wrapper');
+        var planoTrigger = planoWrapper.find('.bw-select-trigger');
+        var planoOptions = planoWrapper.find('.bw-select-options');
+
+        if (cid > 0) {
+            planoGroup.css('display', 'block');
+            planoSelect.html('<option value="">Buscando planos...</option>');
+            if (planoTrigger.length) updateCustomSelectDOM(planoSelect, planoTrigger, planoOptions);
+            
+            $.post(gh_vars.ajax_url, { action: 'gh_get_planos', convenio_id: cid }, function(response) {
+                var res = response;
+                
+                if (typeof response === 'string') {
+                    try { 
+                        var match = response.match(/\{[\s\S]*\}/);
+                        if (match) res = JSON.parse(match[0]);
+                    } catch(err) {}
+                }
+
+                if (res && res.success && res.data && res.data.length > 0) {
+                    var opts = '<option value="">Selecione o plano...</option>'; 
+                    $.each(res.data, function(i, p) { 
+                        opts += '<option value="' + p.id + '">' + p.nome + '</option>'; 
+                    });
+                    planoSelect.html(opts); 
+                    planoGroup.css('display', 'block'); 
+                    
+                    if (planoTrigger.length) updateCustomSelectDOM(planoSelect, planoTrigger, planoOptions);
+                } else { 
+                    planoSelect.html('<option value="">Nenhum plano cadastrado</option>'); 
+                    planoGroup.css('display', 'none'); 
+                    planoSelect.val('');
+                    if (planoTrigger.length) updateCustomSelectDOM(planoSelect, planoTrigger, planoOptions);
+                }
+            }).fail(function() {
+                planoSelect.html('<option value="">Erro ao buscar planos</option>'); 
+                planoGroup.css('display', 'none');
+                planoSelect.val('');
+                if (planoTrigger.length) updateCustomSelectDOM(planoSelect, planoTrigger, planoOptions);
+            });
+        } else { 
+            planoSelect.html('<option value="">Selecione um convênio primeiro</option>'); 
+            planoGroup.css('display', 'none'); 
+            planoSelect.val('');
+            if (planoTrigger.length) updateCustomSelectDOM(planoSelect, planoTrigger, planoOptions);
+        }
+    });
+
+    // =========================================================================
 
     function resetTurnstile(form) { if(typeof turnstile !== 'undefined') { var tsDiv = form.find('.cf-turnstile'); if(tsDiv.length > 0 && tsDiv.attr('id')) { turnstile.reset(tsDiv.attr('id')); } else { turnstile.reset(); } } }
 
@@ -243,7 +387,8 @@ jQuery(document).ready(function($) {
 
         btn.prop('disabled', true).text('Registrando...');
         var token = form.find('[name="cf-turnstile-response"]').val();
-        var data = { action: 'gh_register_user', ts_token: token, nome: form.find('[name="nome"]').val(), sobrenome: form.find('[name="sobrenome"]').val(), cpf: form.find('[name="cpf"]').val(), nasc: form.find('[name="nasc"]').val(), email: form.find('[name="email"]').val(), tel: form.find('[name="tel"]').val(), pass: pass, cep: form.find('[name="cep"]').val(), rua: form.find('[name="rua"]').val(), num: form.find('[name="num"]').val(), comp: form.find('[name="comp"]').val(), bairro: form.find('[name="bairro"]').val(), cidade: form.find('[name="cidade"]').val(), uf: form.find('[name="uf"]').val(), convenio_id: form.find('[name="convenio_id"]').val(), plano_id: form.find('[name="plano_id"]').val(), cart: form.find('[name="cart"]').val(), v_cart: form.find('[name="val_cart"]').val() };
+        var data = { action: 'gh_register_user', ts_token: token, nome: form.find('[name="nome"]').val(), sobrenome: form.find('[name="sobrenome"]').val(), cpf: form.find('[name="cpf"]').val(), nasc: form.find('[name="nasc"]').val(), email: form.find('[name="email"]').val(), tel: form.find('[name="tel"]').val(), pass: pass, cep: form.find('[name="cep"]').val(), rua: form.find('[name="rua"]').val(), num: form.find('[name="num"]').val(), comp: form.find('[name="comp"]').val(), bairro: form.find('[name="bairro"]').val(), cidade: form.find('[name="cidade"]').val(), uf: form.find('[name="uf"]').val(), convenio_id: form.find('select.dyn-convenio').val(), plano_id: form.find('select.dyn-plano').val(), cart: form.find('[name="cart"]').val(), v_cart: form.find('[name="val_cart"]').val() };
+        
         $.post(gh_vars.ajax_url, data, function(res){
             if(res.success) { saveBookingState(); location.reload(); } else { alert(res.data); btn.prop('disabled', false).text('Cadastrar e Entrar'); resetTurnstile(form); }
         });
@@ -254,7 +399,7 @@ jQuery(document).ready(function($) {
         $.post(gh_vars.ajax_url, { action: 'gh_logout_user' }, function(res) { location.reload(); }).fail(function() { location.reload(); });
     });
 
-    // FINALIZAÇÃO
+    // FINALIZAÇÃO DE AGENDAMENTO
     $('#gh-final-confirm-form').on('submit', function(e){
         e.preventDefault(); 
         if(bookingData.exige_guia == 1) { $('#bw-modal-upload').css('display', 'flex').hide().fadeIn(250); } else { submitFinalBooking(); }

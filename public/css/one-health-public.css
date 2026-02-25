@@ -408,3 +408,113 @@ body.bw-booking-fullscreen .bw-wizard-wrapper {
     .bw-flex-btns { flex-direction: column; width: 100%; }
     .bw-flex-btns button { width: 100% !important; margin: 0; }
 }
+
+/* ==========================================================
+ * DROPDOWNS CUSTOMIZADOS
+ * ========================================================== */
+
+/* Oculta os select nativos que receberem a classe .bw-custom-select-applied */
+select.bw-custom-select-applied {
+    display: none !important;
+}
+
+.bw-select-wrapper {
+    position: relative;
+    width: 100%;
+    user-select: none;
+}
+
+.bw-select-trigger {
+    width: 100%;
+    background: var(--bw-color-input-bg);
+    border: 1px solid var(--bw-color-card-border);
+    color: var(--bw-color-text-primary);
+    padding: 16px 20px;
+    border-radius: 14px;
+    font-size: 1.05rem;
+    transition: all 0.3s;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+.bw-select-trigger:hover {
+    border-color: var(--bw-color-accent);
+}
+
+.bw-select-trigger.open {
+    border-color: var(--bw-color-accent);
+    box-shadow: 0 0 0 4px rgba(59,130,246,0.15);
+    background: var(--bw-color-card-bg);
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+.bw-select-trigger .dashicons-arrow-down-alt2 {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: var(--bw-color-text-secondary);
+    transition: transform 0.3s;
+}
+
+.bw-select-trigger.open .dashicons-arrow-down-alt2 {
+    transform: rotate(180deg);
+}
+
+.bw-select-options {
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 0;
+    right: 0;
+    background: var(--bw-color-input-bg);
+    border: 1px solid var(--bw-color-card-border);
+    border-radius: 14px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    z-index: 9999;
+    max-height: 250px;
+    overflow-y: auto;
+    display: none; /* Controlado via JS */
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity 0.2s, transform 0.2s;
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+}
+
+.bw-select-options.show {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.bw-select-option {
+    padding: 12px 20px;
+    color: var(--bw-color-text-primary);
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background 0.2s, color 0.2s;
+    border-bottom: 1px solid rgba(0,0,0,0.03);
+}
+
+.bw-theme-dark .bw-select-option {
+    border-bottom-color: rgba(255,255,255,0.05);
+}
+
+.bw-select-option:last-child {
+    border-bottom: none;
+}
+
+.bw-select-option:hover,
+.bw-select-option.selected {
+    background: var(--bw-color-accent);
+    color: #fff;
+}
+
+/* Scrollbar Customizada para a lista de opções */
+.bw-select-options::-webkit-scrollbar { width: 6px; }
+.bw-select-options::-webkit-scrollbar-track { background: transparent; }
+.bw-select-options::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 4px; }
+.bw-theme-dark .bw-select-options::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); }

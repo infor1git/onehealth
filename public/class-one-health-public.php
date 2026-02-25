@@ -15,6 +15,7 @@ class One_Health_Public {
 		add_action( 'wp_ajax_gh_get_especialidades', array( $this, 'ajax_get_especialidades' ) );
 		add_action( 'wp_ajax_gh_get_convenios', array( $this, 'ajax_get_convenios' ) );
 		add_action( 'wp_ajax_gh_get_planos', array( $this, 'ajax_get_planos' ) );
+        add_action( 'wp_ajax_nopriv_gh_get_planos', array( $this, 'ajax_get_planos' ) );
 		add_action( 'wp_ajax_gh_get_medicos', array( $this, 'ajax_get_medicos' ) );
 		add_action( 'wp_ajax_gh_get_available_dates', array( $this, 'ajax_get_available_dates' ) );
 		add_action( 'wp_ajax_gh_get_slots', array( $this, 'ajax_get_slots' ) );
@@ -113,15 +114,12 @@ class One_Health_Public {
                     <div class="bw-input-group"><label>Nome <span style="color:red">*</span></label><input type="text" name="nome" class="bw-input" required></div>
                     <div class="bw-input-group"><label>Sobrenome <span style="color:red">*</span></label><input type="text" name="sobrenome" class="bw-input" required></div>
                     <div class="bw-input-group"><label>CPF <span style="color:red">*</span></label><input type="tel" name="cpf" class="bw-input" required placeholder="000.000.000-00"></div>
-                    
                     <div class="bw-input-group"><label>Nascimento <span style="color:red">*</span></label><input type="tel" name="nasc" class="bw-input" required placeholder="DD/MM/AAAA"></div>
-                    
                     <div class="bw-input-group"><label>E-mail <span style="color:red">*</span></label><input type="email" name="email" class="bw-input" required></div>
                     <div class="bw-input-group"><label>Celular/WhatsApp <span style="color:red">*</span></label><input type="tel" name="tel" class="bw-input" required placeholder="(00) 00000-0000"></div>
                     
                     <div class="bw-input-group"><label>Crie uma Senha <span style="color:red">*</span></label><input type="password" name="pass" class="bw-input" required></div>
                     <div class="bw-input-group"><label>Confirme a Senha <span style="color:red">*</span></label><input type="password" name="pass_confirm" class="bw-input" required></div>
-                    
                     <div style="grid-column: 1 / -1; font-size: 0.85rem; margin-top:-5px; color:var(--bw-color-text-secondary);">A senha deve conter no mínimo: 1 letra maiúscula, 1 número e 1 caractere especial.</div>
                 </div>
 
@@ -149,7 +147,7 @@ class One_Health_Public {
                         <label>Plano</label><select name="plano_id" class="bw-input dyn-plano"><option value="">Selecione...</option></select>
                     </div>
                     <div class="bw-input-group"><label>Nº da Carteirinha</label><input type="text" name="cart" class="bw-input"></div>
-                    <div class="bw-input-group"><label>Validade da Carteirinha</label><input type="date" name="val_cart" class="bw-input"></div>
+                    <div class="bw-input-group"><label>Validade da Carteirinha</label><input type="tel" name="val_cart" class="bw-input"></div>
                 </div>
 
                 <?php if($ts_sitekey): ?><div class="cf-turnstile-container"><div class="cf-turnstile" data-sitekey="<?php echo esc_attr($ts_sitekey); ?>" data-theme="<?php echo esc_attr($ts_theme); ?>"></div></div><?php endif; ?>
@@ -301,11 +299,11 @@ class One_Health_Public {
         $user_id = wp_create_user($email, $_POST['pass'], $email); if(is_wp_error($user_id)) wp_send_json_error('Erro ao criar usuário.');
         $display_name = sanitize_text_field($_POST['nome']) . ' ' . sanitize_text_field($_POST['sobrenome']);
         wp_update_user(array('ID' => $user_id, 'first_name' => sanitize_text_field($_POST['nome']), 'last_name' => sanitize_text_field($_POST['sobrenome']), 'display_name' => $display_name));
+        
         global $wpdb; 
         $conv_id = !empty($_POST['convenio_id']) ? intval($_POST['convenio_id']) : null; 
         $plano_id = !empty($_POST['plano_id']) ? intval($_POST['plano_id']) : null;
 
-        // [NOVO] Trata a data para gravar no MySQL
         $nasc = sanitize_text_field($_POST['nasc']);
         if (strpos($nasc, '/') !== false) {
             $parts = explode('/', $nasc);
