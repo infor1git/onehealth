@@ -67,6 +67,11 @@ class One_Health_Core {
 		// [NOVO] Salvar Agendamento
 		$this->loader->add_action( 'wp_ajax_gh_save_booking', $plugin_public, 'ajax_save_booking' );
 		$this->loader->add_action( 'wp_ajax_nopriv_gh_save_booking', $plugin_public, 'ajax_save_booking' );
+
+		// [NOVO] Tela de Meus Agendamentos
+		add_shortcode( 'one_health_meus_agendamentos', array( $plugin_public, 'render_meus_agendamentos_shortcode' ) );
+		$this->loader->add_action( 'wp_ajax_gh_confirmar_presenca', $plugin_public, 'ajax_confirmar_presenca' );
+		$this->loader->add_action( 'wp_ajax_gh_cancelar_agendamento', $plugin_public, 'ajax_cancelar_agendamento' );
 	}
 
 	public function run() {

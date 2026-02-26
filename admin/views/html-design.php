@@ -55,6 +55,14 @@ $page_agendamentos = get_option('gh_page_agendamentos', '');
                     </tr>
 
                     <tr><td colspan="2"><h2 style="margin-top:20px; padding-bottom:5px; border-bottom:1px solid #eee;">Páginas do Usuário</h2></td></tr>
+                    <?php $page_agendamento = get_option('gh_page_agendamento', ''); ?>
+                    <tr>
+                        <th scope="row">Página de Agendamento (Wizard)</th>
+                        <td>
+                            <?php wp_dropdown_pages(array('name' => 'gh_page_agendamento', 'show_option_none' => '&mdash; Selecione &mdash;', 'selected' => $page_agendamento, 'class' => 'regular-text')); ?>
+                            <p class="description">A página principal onde o paciente fará novos agendamentos.</p>
+                        </td>
+                    </tr>
                     <tr>
                         <th scope="row">Página de Perfil</th>
                         <td>

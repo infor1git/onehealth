@@ -169,7 +169,8 @@ body.bw-booking-fullscreen .bw-wizard-wrapper {
 .bw-user-links { display: flex; gap: 12px; font-size: 0.8rem; margin-top: 4px; }
 .bw-user-links a { color: var(--bw-color-text-secondary); text-decoration: none; transition: color 0.2s; font-weight: 500; display:flex; align-items:center; gap:2px; }
 .bw-user-links a .dashicons { font-size: 14px; width:14px; height:14px; }
-.bw-user-links a:hover { color: var(--bw-color-accent); text-decoration: underline; }
+.bw-user-links a:hover { color: var(--bw-color-accent); text-decoration: none; opacity: 0.8; }
+a.bw-btn-primary { text-decoration: none !important; }
 .bw-user-links a.bw-ajax-logout { color: #ef4444; }
 
 

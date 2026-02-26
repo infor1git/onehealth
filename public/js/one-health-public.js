@@ -1,7 +1,16 @@
 jQuery(document).ready(function($) {
-    if ($('body').hasClass('bw-booking-fullscreen') && $('#gh-booking-wizard').length) { $('#gh-booking-wizard').appendTo('body'); }
+    // =========================================================================
+    // PROTEÇÃO FULLSCREEN GERAL (Para qualquer tela do sistema)
+    // =========================================================================
+    if ($('.bw-wizard-wrapper').length) {
+        // 1. Força a classe no body via JS (Caso o hook do PHP do tema falhe)
+        $('body').addClass('bw-booking-fullscreen');
+        
+        // 2. Arranca a tela de dentro do tema e joga na raiz do site
+        $('.bw-wizard-wrapper').appendTo('body'); 
+    }
 
-    var bookingData = { unidade_id: 0, unidade_nome: '', servico_id: 0, servico_nome: '', especialidade_id: 0, especialidade_nome: '', convenio_id: 0, convenio_nome: '', plano_id: null, plano_nome: '', medico_id: 0, medico_nome: 'Qualquer profissional', data_sql: '', hora: '', slot_id: 0, exige_guia: 0 };
+    var bookingData = { unidade_id: 0, unidade_nome: '', servico_id: 0, servico_nome: '', especialidade_id: 0, especialidade_nome: '', convenio_id: 0, convenio_nome: '', plano_id: null, plano_nome: '', medico_id: 0, medico_nome: 'Qualquer profissional', data_sql: '', hora: '', slot_id: 0, exige_guia: 0, update_profile_convenio: 0 };
     var stepHistory = [1];
     var servicosMap = {}; 
 
@@ -142,16 +151,25 @@ jQuery(document).ready(function($) {
     };
     window.selectConvenio = function(id, nome, exige) { 
         bookingData.convenio_id = id; bookingData.convenio_nome = nome; bookingData.exige_guia = exige; bookingData.plano_id = null; bookingData.plano_nome = '';
-        if(id == 0) { loadMedicos(); gh_next_step(5); } else {
+        if(id == 0) { 
+            promptConvenioUpdate(function() { loadMedicos(); gh_next_step(5); }); 
+        } else {
             $.post(gh_vars.ajax_url, { action: 'gh_get_planos', convenio_id: id }, function(res) {
                 if(res.success && res.data.length > 0) {
                     var html = ''; $.each(res.data, function(i, item) { html += '<div class="bw-plano-option" onclick="selectPlano('+item.id+', \''+item.nome+'\')">'+item.nome+'</div>'; });
                     $('#bw-modal-planos-list').html(html); $('#bw-modal-planos').css('display', 'flex').hide().fadeIn(250);
-                } else { loadMedicos(); gh_next_step(5); }
+                } else { 
+                    promptConvenioUpdate(function() { loadMedicos(); gh_next_step(5); }); 
+                }
             });
         }
     };
-    window.selectPlano = function(id, nome) { bookingData.plano_id = id; bookingData.plano_nome = nome; $('#bw-modal-planos').fadeOut(200); loadMedicos(); gh_next_step(5); };
+
+    window.selectPlano = function(id, nome) { 
+        bookingData.plano_id = id; bookingData.plano_nome = nome; 
+        $('#bw-modal-planos').fadeOut(200); 
+        promptConvenioUpdate(function() { loadMedicos(); gh_next_step(5); }); 
+    };
 
     // PASSO 5, 6
     function loadMedicos() {
@@ -167,14 +185,42 @@ jQuery(document).ready(function($) {
     window.selectMedico = function(id, nome) { bookingData.medico_id = id; bookingData.medico_nome = nome; initCalendar(); gh_next_step(6); };
     window.skipMedico = function() { bookingData.medico_id = 0; bookingData.medico_nome = 'Qualquer Profissional'; initCalendar(); gh_next_step(6); };
 
-    var calDate = new Date(); function initCalendar() { calDate = new Date(); renderCalendarMonth(); }
-    $('#bw-cal-prev').on('click', function() { calDate.setMonth(calDate.getMonth() - 1); renderCalendarMonth(); });
-    $('#bw-cal-next').on('click', function() { calDate.setMonth(calDate.getMonth() + 1); renderCalendarMonth(); });
+    var calDate = new Date(); 
+    var isAutoAdvancing = false;
+    var autoAdvanceAttempts = 0;
+
+    function initCalendar(autoAdvance = false) { 
+        calDate = new Date(); 
+        isAutoAdvancing = autoAdvance; 
+        autoAdvanceAttempts = 0; 
+        renderCalendarMonth(); 
+    }
+
+    // Chamadas modificadas para ativar o auto-avanço ao chegar na etapa 6
+    window.selectMedico = function(id, nome) { bookingData.medico_id = id; bookingData.medico_nome = nome; initCalendar(true); gh_next_step(6); };
+    window.skipMedico = function() { bookingData.medico_id = 0; bookingData.medico_nome = 'Qualquer Profissional'; initCalendar(true); gh_next_step(6); };
+
+    $('#bw-cal-prev').on('click', function() { isAutoAdvancing = false; calDate.setMonth(calDate.getMonth() - 1); renderCalendarMonth(); });
+    $('#bw-cal-next').on('click', function() { isAutoAdvancing = false; calDate.setMonth(calDate.getMonth() + 1); renderCalendarMonth(); });
+    
     function renderCalendarMonth() {
         var month = calDate.getMonth(); var year = calDate.getFullYear(); var mesAno = year + '-' + String(month + 1).padStart(2, '0');
         var monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
         $('#bw-cal-month-name').text(monthNames[month] + " " + year); buildCalendarGrid(month, year, []); $('#gh-slots-list').html('<p style="opacity:0.7; padding: 20px;">Selecione um dia no calendário.</p>');
-        $.post(gh_vars.ajax_url, { action: 'gh_get_available_dates', unidade_id: bookingData.unidade_id, especialidade_id: bookingData.especialidade_id, servico_id: bookingData.servico_id, medico_id: bookingData.medico_id, mes_ano: mesAno }, function(res) { if(res.success && res.data) { buildCalendarGrid(month, year, res.data); } });
+        
+        $.post(gh_vars.ajax_url, { action: 'gh_get_available_dates', unidade_id: bookingData.unidade_id, especialidade_id: bookingData.especialidade_id, servico_id: bookingData.servico_id, medico_id: bookingData.medico_id, mes_ano: mesAno }, function(res) { 
+            if(res.success && res.data) { 
+                // Se não houver vaga, e estiver buscando automaticamente (máx 6 meses pra frente)
+                if(res.data.length === 0 && isAutoAdvancing && autoAdvanceAttempts < 6) {
+                    autoAdvanceAttempts++;
+                    calDate.setMonth(calDate.getMonth() + 1);
+                    renderCalendarMonth();
+                    return; // Para a execução atual
+                }
+                isAutoAdvancing = false; // Desliga o modo automático após encontrar ou atingir o limite
+                buildCalendarGrid(month, year, res.data); 
+            } 
+        });
     }
     function buildCalendarGrid(month, year, availMap) {
         var grid = $('#bw-cal-grid'); grid.empty(); var firstDay = new Date(year, month, 1).getDay(); var daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -370,7 +416,7 @@ jQuery(document).ready(function($) {
         e.preventDefault(); var form = $(this); var btn = form.find('button[type="submit"]'); btn.prop('disabled', true).text('Aguarde...');
         var token = form.find('[name="cf-turnstile-response"]').val();
         $.post(gh_vars.ajax_url, { action: 'gh_login_user', email: form.find('[name="email"]').val(), pass: form.find('[name="pass"]').val(), ts_token: token }, function(res){
-            if(res.success) { saveBookingState(); location.reload(); } else { alert(res.data); btn.prop('disabled', false).text('Entrar'); resetTurnstile(form); }
+            if(res.success) { saveBookingState(); location.reload(); } else { ghAlert(res.data, 'error'); btn.prop('disabled', false).text('Entrar'); resetTurnstile(form); }
         });
     });
 
@@ -380,9 +426,9 @@ jQuery(document).ready(function($) {
         // VALIDAÇÃO DE SENHA FORTE NO CLIENTE
         var pass = form.find('[name="pass"]').val();
         var passConf = form.find('[name="pass_confirm"]').val();
-        if (pass !== passConf) { alert('As senhas não coincidem.'); return; }
+        if (pass !== passConf) { ghAlert('As senhas não coincidem.', 'error'); return; }
         if (!/(?=.*[A-Z])/.test(pass) || !/(?=.*\d)/.test(pass) || !/(?=.*[^A-Za-z0-9])/.test(pass)) {
-            alert('A senha deve conter no mínimo 1 letra maiúscula, 1 número e 1 caractere especial.'); return;
+            ghAlert('A senha deve conter no mínimo 1 letra maiúscula, 1 número e 1 caractere especial.', 'error'); return;
         }
 
         btn.prop('disabled', true).text('Registrando...');
@@ -390,7 +436,7 @@ jQuery(document).ready(function($) {
         var data = { action: 'gh_register_user', ts_token: token, nome: form.find('[name="nome"]').val(), sobrenome: form.find('[name="sobrenome"]').val(), cpf: form.find('[name="cpf"]').val(), nasc: form.find('[name="nasc"]').val(), email: form.find('[name="email"]').val(), tel: form.find('[name="tel"]').val(), pass: pass, cep: form.find('[name="cep"]').val(), rua: form.find('[name="rua"]').val(), num: form.find('[name="num"]').val(), comp: form.find('[name="comp"]').val(), bairro: form.find('[name="bairro"]').val(), cidade: form.find('[name="cidade"]').val(), uf: form.find('[name="uf"]').val(), convenio_id: form.find('select.dyn-convenio').val(), plano_id: form.find('select.dyn-plano').val(), cart: form.find('[name="cart"]').val(), v_cart: form.find('[name="val_cart"]').val() };
         
         $.post(gh_vars.ajax_url, data, function(res){
-            if(res.success) { saveBookingState(); location.reload(); } else { alert(res.data); btn.prop('disabled', false).text('Cadastrar e Entrar'); resetTurnstile(form); }
+            if(res.success) { saveBookingState(); location.reload(); } else { ghAlert(res.data, 'error'); btn.prop('disabled', false).text('Cadastrar e Entrar'); resetTurnstile(form); }
         });
     });
 
@@ -406,7 +452,7 @@ jQuery(document).ready(function($) {
     });
 
     $('#bw-btn-enviar-upload').on('click', function() {
-        if(!$('#gh_guia_file')[0].files[0]) { alert("Por favor, selecione o arquivo do pedido médico."); return; }
+        if(!$('#gh_guia_file')[0].files[0]) { ghAlert("Por favor, selecione o arquivo do pedido médico.", 'error'); return; }
         $('#bw-modal-upload').fadeOut(200); submitFinalBooking();
     });
 
@@ -414,21 +460,192 @@ jQuery(document).ready(function($) {
         var form = $('#gh-final-confirm-form'); var btn = form.find('button[type="submit"]'); 
         btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> Processando...');
         
-        var token = form.find('[name="cf-turnstile-response"]').val();
         var formData = new FormData();
-        formData.append('action', 'gh_save_booking'); formData.append('nonce', gh_vars.nonce); formData.append('ts_token', token);
+        formData.append('action', 'gh_save_booking'); formData.append('nonce', gh_vars.nonce);
         formData.append('slot_id', bookingData.slot_id); formData.append('servico_id', bookingData.servico_id); formData.append('convenio_id', bookingData.convenio_id);
         if(bookingData.plano_id) formData.append('plano_id', bookingData.plano_id);
         
-        if(bookingData.exige_guia == 1 && $('#gh_guia_file')[0].files.length > 0) { formData.append('guia_file', $('#gh_guia_file')[0].files[0]); }
+        if(bookingData.update_profile_convenio === 1) {
+            formData.append('update_profile_convenio', '1');
+        }
+        
+        if(bookingData.exige_guia == 1 && $('#gh_guia_file')[0].files.length > 0) { 
+            var files = $('#gh_guia_file')[0].files;
+            for(var i = 0; i < files.length; i++) {
+                formData.append('guia_file[]', files[i]);
+            }
+        }
 
         $.ajax({
             url: gh_vars.ajax_url, type: 'POST', data: formData, processData: false, contentType: false,
             success: function(res) {
-                if(res.success) { clearBookingState(); alert('Agendamento realizado com sucesso!'); window.location.href = window.location.href.split('#')[0]; } 
-                else { alert('Atenção: ' + res.data); btn.prop('disabled', false).html('<span class="dashicons dashicons-calendar-alt"></span> Finalizar Agendamento'); resetTurnstile(form); }
+                if(res.success) { 
+                    clearBookingState(); 
+                    ghAlert('Seu agendamento foi realizado com sucesso!', 'success', function() {
+                        window.location.href = gh_vars.url_agendamentos; // Redireciona para a tela Meus Agendamentos
+                    }); 
+                } 
+                else { 
+                    ghAlert(res.data, 'error'); // Exibe a mensagem de bloqueio (ex: serviço duplicado)
+                    btn.prop('disabled', false).html('<span class="dashicons dashicons-calendar-alt"></span> Finalizar Agendamento'); 
+                }
             },
-            error: function() { alert('Falha na requisição. Verifique sua conexão e tente novamente.'); btn.prop('disabled', false).html('<span class="dashicons dashicons-calendar-alt"></span> Finalizar Agendamento'); resetTurnstile(form); }
+            error: function() { 
+                ghAlert('Falha na requisição. Verifique sua conexão e tente novamente.', 'error'); 
+                btn.prop('disabled', false).html('<span class="dashicons dashicons-calendar-alt"></span> Finalizar Agendamento'); 
+            }
         });
     }
+
+    // =========================================================================
+    // MODAIS CUSTOMIZADOS DE ALERTA E CONFIRMAÇÃO (Substitui os nativos do navegador)
+    // =========================================================================
+    window.ghAlert = function(message, type, callback) {
+        $('#gh-custom-alert').remove();
+        var icon = type === 'error' ? 'dashicons-warning' : (type === 'success' ? 'dashicons-yes-alt' : 'dashicons-info');
+        var color = type === 'error' ? '#ef4444' : (type === 'success' ? '#10b981' : 'var(--bw-color-accent)');
+        var html = '<div id="gh-custom-alert" class="bw-modal-overlay" style="display:flex; z-index: 2147483649;"><div class="bw-modal-content" style="max-width: 400px; text-align:center;"><span class="dashicons '+icon+'" style="font-size: 55px; width:55px; height:55px; color: '+color+'; margin-bottom: 20px;"></span><h3 style="margin-top:0;">Aviso do Sistema</h3><p style="font-size: 1.1rem; color: var(--bw-color-text-secondary); margin-bottom:25px;">'+message+'</p><div><button type="button" class="bw-btn-primary" id="gh-btn-alert-ok" style="width:100%; color: #ffffff !important;">OK, Entendi</button></div></div></div>';
+        var target = $('.bw-wizard-wrapper').length ? $('.bw-wizard-wrapper') : $('body');
+        target.append(html);
+        $('#gh-btn-alert-ok').focus().on('click', function() {
+            $('#gh-custom-alert').fadeOut(200, function(){ $(this).remove(); });
+            if(typeof callback === 'function') callback();
+        });
+    };
+
+    window.ghConfirm = function(message, callbackYes) {
+        $('#gh-custom-confirm').remove();
+        var html = '<div id="gh-custom-confirm" class="bw-modal-overlay" style="display:flex; z-index: 2147483649;"><div class="bw-modal-content" style="max-width: 420px; text-align:center;"><span class="dashicons dashicons-warning" style="font-size: 55px; width:55px; height:55px; color: #f59e0b; margin-bottom: 20px;"></span><h3 style="margin-top:0;">Atenção</h3><p style="font-size: 1.1rem; color: var(--bw-color-text-secondary); margin-bottom: 25px;">'+message+'</p><div class="bw-flex-btns" style="justify-content:center;"><button type="button" class="bw-btn-secondary" id="gh-btn-confirm-no" style="color: var(--bw-color-text-primary);">Não, Voltar</button><button type="button" class="bw-btn-primary" id="gh-btn-confirm-yes" style="background:#ef4444; border-color:#ef4444; color: #ffffff !important;">Sim, Confirmar</button></div></div></div>';
+        var target = $('.bw-wizard-wrapper').length ? $('.bw-wizard-wrapper') : $('body');
+        target.append(html);
+        $('#gh-btn-confirm-no').on('click', function() {
+            $('#gh-custom-confirm').fadeOut(200, function(){ $(this).remove(); });
+        });
+        $('#gh-btn-confirm-yes').on('click', function() {
+            $('#gh-custom-confirm').fadeOut(200, function(){ $(this).remove(); });
+            if(typeof callbackYes === 'function') callbackYes();
+        });
+    };
+
+    // MODAL DE CONFIRMAÇÃO DE PRESENÇA
+    window.ghConfirmPresence = function(callbackYes) {
+        $('#gh-custom-confirm-presence').remove();
+        var message = 'Confirmar Presença indica que você comparecerá ao agendamento realizado. Ao confirmar agora, não serão realizadas outras tentativas de confirmação de presença.';
+        var html = '<div id="gh-custom-confirm-presence" class="bw-modal-overlay" style="display:flex; z-index: 2147483649;"><div class="bw-modal-content" style="max-width: 480px; text-align:center;"><span class="dashicons dashicons-yes-alt" style="font-size: 55px; width:55px; height:55px; color: #10b981; margin-bottom: 20px;"></span><h3 style="margin-top:0;">Confirmar Presença</h3><p style="font-size: 1.05rem; color: var(--bw-color-text-secondary); margin-bottom: 25px;">'+message+'</p><div class="bw-flex-btns" style="justify-content:center;"><button type="button" class="bw-btn-secondary" id="gh-btn-presence-no" style="color: var(--bw-color-text-primary);">Confirmar Depois</button><button type="button" class="bw-btn-primary" id="gh-btn-presence-yes" style="background:#10b981; border-color:#10b981; color:#ffffff !important;">Sim, Confirmar Presença</button></div></div></div>';
+        var target = $('.bw-wizard-wrapper').length ? $('.bw-wizard-wrapper') : $('body');
+        target.append(html);
+        $('#gh-btn-presence-no').on('click', function() { $('#gh-custom-confirm-presence').fadeOut(200, function(){ $(this).remove(); }); });
+        $('#gh-btn-presence-yes').on('click', function() { $('#gh-custom-confirm-presence').fadeOut(200, function(){ $(this).remove(); }); if(typeof callbackYes === 'function') callbackYes(); });
+    };
+
+    // MODAL INTELIGENTE DE ATUALIZAÇÃO DE CONVÊNIO/PLANO
+    // MODAL INTELIGENTE DE ATUALIZAÇÃO DE CONVÊNIO/PLANO
+    window.promptConvenioUpdate = function(callback) {
+        var currentCov = parseInt(gh_vars.u_convenio_id) || 0;
+        var currentPlan = parseInt(gh_vars.u_plano_id) || 0;
+        var newCov = parseInt(bookingData.convenio_id) || 0;
+        var newPlan = parseInt(bookingData.plano_id) || 0;
+        
+        var needsModal = false; var title = ''; var msg = '';
+        
+        // REGRA CORRIGIDA: Só avança direto se os dados escolhidos forem idênticos aos do perfil.
+        if(currentCov === newCov && currentPlan === newPlan) {
+            bookingData.update_profile_convenio = 0; callback(); return;
+        }
+
+        if(currentCov !== newCov) {
+            var nomeCov = newCov === 0 ? 'Particular' : bookingData.convenio_nome;
+            needsModal = true; 
+            title = 'Atualizar Convênio?'; 
+            msg = 'Deseja definir seu atendimento principal como <strong>' + nomeCov + '</strong>? Isto vai atualizar o seu cadastro para agendamentos futuros.';
+        } else if (currentCov === newCov && currentPlan !== newPlan) {
+            needsModal = true; 
+            title = 'Atualizar Plano?'; 
+            msg = 'Deseja alterar o plano do seu cadastro para agendamentos futuros?';
+        }
+
+        if(!needsModal) { bookingData.update_profile_convenio = 0; callback(); return; }
+
+        $('#gh-custom-convenio-modal').remove();
+        var html = '<div id="gh-custom-convenio-modal" class="bw-modal-overlay" style="display:flex; z-index: 2147483649;"><div class="bw-modal-content" style="max-width: 450px; text-align:center;"><span class="dashicons dashicons-id" style="font-size: 55px; width:55px; height:55px; color: var(--bw-color-accent); margin-bottom: 20px;"></span><h3 style="margin-top:0;">'+title+'</h3><p style="font-size: 1.05rem; color: var(--bw-color-text-secondary); margin-bottom: 25px;">'+msg+'</p><div class="bw-flex-btns" style="justify-content:center; flex-direction:column; gap:10px;"><button type="button" class="bw-btn-primary" id="gh-btn-cov-yes" style="color: #ffffff !important; width:100%;">Sim, atualizar meu cadastro</button><button type="button" class="bw-btn-secondary" id="gh-btn-cov-no" style="color: var(--bw-color-text-primary); width:100%;">Não, apenas para este agendamento</button></div></div></div>';
+        var target = $('.bw-wizard-wrapper').length ? $('.bw-wizard-wrapper') : $('body'); target.append(html);
+
+        $('#gh-btn-cov-no').on('click', function() { 
+            bookingData.update_profile_convenio = 0; 
+            $('#gh-custom-convenio-modal').fadeOut(200, function(){ $(this).remove(); callback(); }); 
+        });
+        
+        $('#gh-btn-cov-yes').on('click', function() { 
+            bookingData.update_profile_convenio = 1; 
+            gh_vars.u_convenio_id = newCov; 
+            gh_vars.u_plano_id = newPlan; // Atualiza a variável na tela para não perguntar de novo na mesma sessão
+            $('#gh-custom-convenio-modal').fadeOut(200, function(){ $(this).remove(); callback(); }); 
+        });
+    };
+
+    // =========================================================================
+    // LÓGICA DA TELA DE MEUS AGENDAMENTOS
+    // =========================================================================
+    
+    // Toggle para mostrar histórico com troca de texto e ícone
+    $(document).on('click', '#gh-toggle-passados', function() {
+        var btn = $(this);
+        var container = $('.gh-agendamentos-passados');
+        
+        // Remove a animação do fade original e usa slideToggle com callback sincronizado
+        container.slideToggle(250, function() {
+            if (container.is(':visible')) {
+                btn.html('<span class="dashicons dashicons-hidden"></span> Ocultar Agendamentos Anteriores');
+                btn.css({'background': 'var(--bw-color-input-bg)', 'color': 'var(--bw-color-text-primary)'});
+            } else {
+                btn.html('<span class="dashicons dashicons-visibility"></span> Mostrar Agendamentos Anteriores');
+                btn.css({'background': 'var(--bw-color-card-bg)', 'color': 'var(--bw-color-text-secondary)'});
+            }
+        });
+    });
+
+    // Confirmar Presença
+    $(document).on('click', '.gh-btn-confirmar', function() {
+        var btn = $(this);
+        var id = btn.data('id');
+        
+        ghConfirmPresence(function() {
+            btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> Aguarde...');
+            $.post(gh_vars.ajax_url, {
+                action: 'gh_confirmar_presenca',
+                nonce: gh_vars.nonce,
+                agendamento_id: id
+            }, function(res) {
+                if(res.success) {
+                    ghAlert(res.data, 'success', function() { location.reload(); });
+                } else {
+                    ghAlert(res.data, 'error');
+                    btn.prop('disabled', false).html('<span class="dashicons dashicons-yes"></span> Confirmar Presença');
+                }
+            });
+        });
+    });
+
+    // Cancelar Agendamento
+    $(document).on('click', '.gh-btn-cancelar', function() {
+        var btn = $(this);
+        var id = btn.data('id');
+        
+        ghConfirm('Tem certeza que deseja cancelar este agendamento? Esta ação não pode ser desfeita.', function() {
+            btn.prop('disabled', true).html('<span class="dashicons dashicons-update spin"></span> Cancelando...');
+
+            $.post(gh_vars.ajax_url, {
+                action: 'gh_cancelar_agendamento',
+                nonce: gh_vars.nonce,
+                agendamento_id: id
+            }, function(res) {
+                if(res.success) {
+                    ghAlert(res.data, 'success', function() { location.reload(); });
+                } else {
+                    ghAlert(res.data, 'error');
+                    btn.prop('disabled', false).html('<span class="dashicons dashicons-no"></span> Cancelar Agendamento');
+                }
+            });
+        });
+    });
 });

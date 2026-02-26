@@ -147,7 +147,8 @@ class One_Health_Admin {
         
         if ( isset( $_POST['gh_page_perfil'] ) ) update_option( 'gh_page_perfil', intval( $_POST['gh_page_perfil'] ) );
         if ( isset( $_POST['gh_page_agendamentos'] ) ) update_option( 'gh_page_agendamentos', intval( $_POST['gh_page_agendamentos'] ) );
-		
+		if ( isset( $_POST['gh_page_agendamento'] ) ) update_option( 'gh_page_agendamento', intval( $_POST['gh_page_agendamento'] ) );
+
         if ( isset($_POST['gh_use_default_color']) ) {
             update_option('gh_accent_color', ''); 
         } elseif ( isset($_POST['gh_accent_color']) ) {
